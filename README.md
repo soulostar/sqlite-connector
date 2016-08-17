@@ -21,7 +21,7 @@ the default configuration will work fine and you may simply write:
 SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
 ```
 
-The primary function of this library is illustrated in the following code snippet (if in an impractical way):
+The primary function of this library is illustrated in the following code snippet (albeit in an impractical way):
 ```java
 try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
     try (Connection conn2 = connector.getConnection('C:\\mydatabase.db')) {
@@ -40,5 +40,5 @@ at some point in your code first, before using this connector.
 
 ## Todo
 
-Add support for the `DriverManager.getConnection` overloads that take a `Properties` object, and a `user` + `password`.
+Add support for the `DriverManager.getConnection` overloads that take a `Properties` object, and a `user` + `password`. These two overloads must be handled with care - in situations where two concurrent requesters for the same database want to access the database with different properties or different users + passwords, returning the same connection to both requesters would lead to unexpected behavior. How to go about handling this is TBD.
 
