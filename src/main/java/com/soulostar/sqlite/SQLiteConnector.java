@@ -264,7 +264,8 @@ public class SQLiteConnector {
 		 */
 		private void incrementUsers()
 		{
-			if (logger != null) logger.trace("{} user count incremented to {}.", this, ++numUsers);
+			numUsers++;
+			if (logger != null) logger.trace("{} user count incremented to {}.", this, numUsers);
 		}
 
 		@Override
@@ -299,7 +300,8 @@ public class SQLiteConnector {
 			Lock lock = locks.get(canonicalPath);
 			lock.lock();
 			try {
-				if (logger != null) logger.trace("{} user count decremented to {}.", this, --numUsers);
+				numUsers--;
+				if (logger != null) logger.trace("{} user count decremented to {}.", this, numUsers);
 				if (numUsers == 0) {
 					conn.close();
 					if (logger != null) logger.trace("{} underlying Connection closed.", this);
