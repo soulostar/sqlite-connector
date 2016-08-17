@@ -32,9 +32,13 @@ try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
 }
 ```
 
-This library does not take care of loading drivers. Typically, you would call
+Note that this library does not handle loading drivers. Typically, you would call
 ```java
 Class.forName("org.sqlite.JDBC");
 ```
 at some point in your code first, before using this connector.
+
+## Todo
+
+Add support for the `DriverManager.getConnection` overloads that take a `Properties` object, and a `user` + `password`.
 
