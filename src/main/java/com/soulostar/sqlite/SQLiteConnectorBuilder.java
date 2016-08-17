@@ -78,13 +78,19 @@ public class SQLiteConnectorBuilder {
 	 * Specifies the number of stripes to use for the get/close connections
 	 * lock.
 	 * <p>
-	 * The connector locks . A higher number of stripes
-	 * allows for increased concurrency at the cost of a bigger memory
-	 * footprint, while a lower stripe count saves memory at the cost of
-	 * decreased concurrency. The default stripe count is <code>5</code>.
+	 * The connector locks map read operations (getting and closing connections)
+	 * on a canonical-path basis. Concurrent map read operations for the
+	 * <b>same</b> canonical path are guaranteed to use locking, but a best
+	 * effort will be made for concurrent map read operations for
+	 * <b>different</b> canonical paths to proceed without locking. A higher
+	 * number of stripes allows for increased concurrency at the cost of a
+	 * bigger memory footprint, while a lower stripe count saves memory at the
+	 * cost of decreased concurrency. The default stripe count is <code>5</code>
+	 * .
 	 * 
 	 * @param lockStripes
-	 * @return
+	 *            - the number of stripes to use for the map read lock
+	 * @return this object, for chaining calls.
 	 */
 	public SQLiteConnectorBuilder withLockStripes(int lockStripes) {
 		this.lockStripes = lockStripes;
