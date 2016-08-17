@@ -37,15 +37,15 @@ import com.google.common.util.concurrent.Striped;
 
 /**
  * Connector for SQLite connections. This object maintains at most one
- * connection per connection string/file path. If multiple threads attempt to
- * access the same database file simultaneously, the same
- * <code>SQLiteConnection</code> will be returned to all of them.<br />
- * <br />
+ * connection per file path. If multiple threads attempt to access the same
+ * database file simultaneously, the same {@link SQLiteConnection} will be
+ * returned to all of them. This performs better than returning separate
+ * connections to each thread, and is safe to do in SQLite's default threading
+ * mode (Serialized).
  * 
- * @see SQLiteConnection
+ * @author Sidney Tang
  */
 public class SQLiteConnector {
-	
 	
 	/**
 	 * Special subname that indicates an in-memory database.
@@ -54,76 +54,16 @@ public class SQLiteConnector {
 	 * 		https://www.sqlite.org/inmemorydb.html</a>
 	 */
 	private static final String IN_MEMORY_SUBNAME = ":memory:";
-	
-	/**
-	 * The standard <code>jdbc:<i>subprotocol</i>:</code> connection string prefix for SQLite.
-	 */
-	private static final String DEFAULT_CONN_STRING_PREFIX = "jdbc:sqlite:";
-	private static final int DEFAULT_LOCK_STRIPE_COUNT = 5;
 
 	private final Logger logger = LoggerFactory.getLogger(SQLiteConnector.class);
 	private final String connStringPrefix;
 	private final Map<String, SQLiteConnection> connectionMap;
 	private final Striped<Lock> locks;
 	
-	/**
-	 * Creates a new <code>SQLiteConnector</code> that will form its connection
-	 * strings by prepending {@link #DEFAULT_CONN_STRING_PREFIX} to DB path
-	 * names.
-	 */
-	public SQLiteConnector() {
-		this(DEFAULT_CONN_STRING_PREFIX, DEFAULT_LOCK_STRIPE_COUNT);
-	}
-	
-	/**
-	 * Creates a new <code>SQLiteConnector</code> that will form its connection
-	 * strings by prepending <code>connStringPrefix</code> to DB path names.
-	 * <p>
-	 * This constructor is provided for the hypothetical case where you are
-	 * using a SQLite JDBC driver that does not use
-	 * {@link #DEFAULT_CONN_STRING_PREFIX} for connection strings. Whether or
-	 * not such a driver exists is currently unknown to the author of this
-	 * library. Generally, the no-args constructor should be used instead.
-	 * 
-	 * @param connStringPrefix
-	 *            - the prefix to append to DB path names, in the form
-	 *            <code>jdbc:<i>subprotocol</i>:</code> (e.g.
-	 *            <code>jdbc:sqlite:</code>)
-	 * @throws NullPointerException
-	 *             if <code>connStringPrefix</code> is null
-	 */
-	public SQLiteConnector(String connStringPrefix) {
-		this(connStringPrefix, DEFAULT_LOCK_STRIPE_COUNT);
-	}
-	
-	public SQLiteConnector(int lockStripes) {
-		this(DEFAULT_CONN_STRING_PREFIX, lockStripes);
-	}
-	
-	/**
-	 * Creates a new <code>SQLiteConnector</code> that will form its connection
-	 * strings by prepending <code>connStringPrefix</code> to DB path names.
-	 * <p>
-	 * Getting connections with this connector is synchronized by a striped
-	 * lock, based on the canonical path of the target database. The lock will
-	 * be created with the specified number of stripes. A higher number of
-	 * stripes maximizes concurrency, while a lower number of stripes minimizes
-	 * memory footprint.
-	 * 
-	 * @param connStringPrefix
-	 *            - the prefix to append to DB path names, in the form
-	 *            <code>jdbc:<i>subprotocol</i>:</code> (e.g.
-	 *            <code>jdbc:sqlite:</code>)
-	 * @param lockStripes
-	 *            - the number of stripes for the lock
-	 */
-	public SQLiteConnector(String connStringPrefix, int lockStripes) {
-		checkNotNull(connStringPrefix, "Connection string prefix is null.");
-		checkArgument(lockStripes > 0, "Lock stripe count must be greater than zero.");
-		
+	SQLiteConnector(String connStringPrefix, int lockStripes, int initialCapacity, float loadFactor, int concurrencyLevel) {
 		this.connStringPrefix = connStringPrefix;
-		connectionMap = new ConcurrentHashMap<>();
 		locks = Striped.lock(lockStripes);
+		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
 	}
 	
 	/**
@@ -150,24 +90,32 @@ public class SQLiteConnector {
 	
 	public SQLiteConnection getConnection(String dbPath) {
 		if (IN_MEMORY_SUBNAME.equals(dbPath)) {
-			synchronized (IN_MEMORY_SUBNAME) {
+			Lock lock = locks.get(IN_MEMORY_SUBNAME);
+			lock.lock();
+			try {				
 				return getConnectionFromMap(IN_MEMORY_SUBNAME);				
+			} finally {
+				lock.unlock();
 			}
 		}
 
 		try {
 			File dbFile = new File(dbPath);
 			String canonicalPath = dbFile.getCanonicalPath();
-			synchronized (canonicalPath) {
+			Lock lock = locks.get(canonicalPath);
+			lock.lock();
+			try {
 				if (dbFile.exists()) {
-					return getConnectionFromMap(dbFile.getCanonicalPath());
+					return getConnectionFromMap(canonicalPath);
 				} else if (createIfDoesNotExist) {
 					SQLiteConnection conn = new SQLiteConnection(dbPath);
-					connectionMap.put(dbFile.getCanonicalPath(), conn);
+					connectionMap.put(canonicalPath, conn);
 					return conn;
-				}				
+				}								
+				throw new FileNotFoundException("Can't get SQLite database connection. File doesn't exist: " + dbPath);
+			} finally {
+				lock.unlock();
 			}
-			throw new FileNotFoundException("Can't get SQLite database connection. File doesn't exist: " + dbPath);
 		} catch (IOException ex) {
 			throw new SQLException(ex);
 		}
@@ -181,8 +129,6 @@ public class SQLiteConnector {
 	 *
 	 */
 	private class SQLiteConnection implements AutoCloseable, Connection {
-		
-		private static final String SQLITE_DRIVER_NAME = "org.sqlite.JDBC";
 		
 		/** The connection being wrapped by this object. */
 		private final Connection conn;

@@ -1,4 +1,4 @@
-package com.soulostar;
+package com.soulostar.sqlite;
 
 import static org.junit.Assert.*;
 
