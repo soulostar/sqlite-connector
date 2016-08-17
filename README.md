@@ -12,6 +12,3 @@ and:
 
 Keep in mind that this library is written for use with SQLite's serialized mode. For more information on SQLite threading modes, see: https://www.sqlite.org/threadsafe.html
 
-## License
-This library is MIT licensed.
-

@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 
 import org.slf4j.Logger;
@@ -47,34 +46,145 @@ import com.google.common.util.concurrent.Striped;
  */
 public class SQLiteConnector {
 	
-	/**
-	 * Special subname that indicates an in-memory database.
-	 * 
-	 * @see <a href="https://www.sqlite.org/inmemorydb.html">
-	 * 		https://www.sqlite.org/inmemorydb.html</a>
-	 */
 	private static final String IN_MEMORY_SUBNAME = ":memory:";
 
-	private final Logger logger = LoggerFactory.getLogger(SQLiteConnector.class);
+	private final Logger logger;
+
 	private final String connStringPrefix;
+	
+	/**
+	 * A map that maps canonical paths to SQLite connections. Paths of any other
+	 * kind (relative, absolute) should not be used as keys. Also note that the
+	 * canonical paths should always be of <b>existing files</b>, since canonical
+	 * paths for the same file may differ depending on if it exists, doesn't exist,
+	 * or was deleted.
+	 * @see {@link File#getCanonicalPath()}
+	 */
 	private final Map<String, SQLiteConnection> connectionMap;
 	private final Striped<Lock> locks;
 	
-	SQLiteConnector(String connStringPrefix, int lockStripes, int initialCapacity, float loadFactor, int concurrencyLevel) {
-		this.connStringPrefix = connStringPrefix;
+	private final boolean canCreate;
+	
+	SQLiteConnector(
+		String subprotocol,
+		int lockStripes,
+		int initialCapacity,
+		float loadFactor,
+		int concurrencyLevel,
+		boolean canCreate,
+		boolean logging
+	) {
+		connStringPrefix = "jdbc:" + subprotocol + ":";
 		locks = Striped.lock(lockStripes);
 		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
+		this.canCreate = canCreate;
+		logger = logging ? LoggerFactory.getLogger(SQLiteConnector.class) : null;
 	}
 	
 	/**
-	 * Attempts to retrieve an existing connection for the specified path
-	 * from the connection map. If no existing connection is present or the
-	 * existing connection is closed, a new connection will be created and
-	 * returned instead.
+	 * Gets a connection to the database at the specified path. If the database
+	 * does not exist and {@link SQLiteConnectorBuilder#cannotCreate()} was
+	 * <b>not</b> called during the building of this connector, the database
+	 * will be created and a connection to the newly created database will be
+	 * returned.
+	 * <p>
+	 * This connector will only ever use one connection at a time for a given
+	 * database. If multiple threads want to connect to the same database
+	 * concurrently, the same connection will be returned to all of them. This
+	 * is safe to do in SQLite's default threading mode, <code>Serialized</code>
+	 * , and performs better than granting separate connections to each thread.
 	 * 
-	 * @param dbPath - the path of the database to connect to
+	 * @param dbPath
+	 *            - the path of the target database, or <code>:memory:</code> to
+	 *            connect to an in-memory database
+	 * @return a connection to the database at the specified path.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 * @throws FileNotFoundException
+	 *             if <code>cannotCreate</code> was called during the building
+	 *             of this connector and the target database does not exist
+	 * @throws IOException
+	 *             if an I/O error occurs while constructing canonical paths
+	 */
+	public SQLiteConnection getConnection(String dbPath) throws SQLException, IOException {
+		return getConnection(dbPath, canCreate);
+	}
+	
+	/**
+	 * Gets a connection to the database at the specified path.
+	 * <p>
+	 * This connector will only ever use one connection at a time for a given
+	 * database. If multiple threads want to connect to the same database
+	 * concurrently, the same connection will be returned to all of them. This
+	 * is safe to do in SQLite's default threading mode, <code>Serialized</code>
+	 * , and performs better than granting separate connections to each thread.
+	 * 
+	 * @param dbPath
+	 *            - the path of the target database, or <code>:memory:</code> to
+	 *            connect to an in-memory database
+	 * @param createIfDoesNotExist
+	 *            - whether or not to create the target database if it doesn't
+	 *            exist. If this is false and the database does not exist, an
+	 *            exception will be thrown.
+	 * @return a connection to the database at the specified path.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 * @throws FileNotFoundException
+	 *             if <code>createIfDoesNotExist</code> is false and the target
+	 *             database does not exist
+	 * @throws IOException
+	 *             if an I/O error occurs while constructing canonical paths
+	 */
+	public SQLiteConnection getConnection(String dbPath, boolean createIfDoesNotExist) throws SQLException, IOException {
+		checkNotNull(dbPath, "Database path is null.");
+		checkArgument(!dbPath.isEmpty(), "Database path is empty.");
+		
+		if (IN_MEMORY_SUBNAME.equals(dbPath)) {
+			Lock lock = locks.get(IN_MEMORY_SUBNAME);
+			lock.lock();
+			try {				
+				return getConnectionFromMap(IN_MEMORY_SUBNAME);
+			} finally {
+				lock.unlock();
+			}
+		}
+	
+		File dbFile = new File(dbPath);
+		String canonicalPath = dbFile.getCanonicalPath();
+		Lock lock = locks.get(canonicalPath);
+		lock.lock();
+		try {
+			if (dbFile.exists()) {
+				return getConnectionFromMap(canonicalPath);
+			} else if (createIfDoesNotExist) {
+				SQLiteConnection conn = new SQLiteConnection(dbPath);
+				// Canonical path may be different between existing and
+				// non-existing files, so we resolve canonical path again
+				// here before putting connection into map.
+				connectionMap.put(dbFile.getCanonicalPath(), conn);
+				return conn;
+			}
+			throw new FileNotFoundException("Can't get SQLite database connection. File doesn't exist: " + dbPath);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * Attempts to retrieve an existing connection for the specified path from
+	 * the connection map. If no existing connection is present or the existing
+	 * connection is closed, a new connection will be created and returned
+	 * instead.
+	 * <p>
+	 * <b>Note</b>: This method should only be called from within a
+	 * lock-protected try block. It can produce incorrect behavior if called
+	 * outside of locked sections with the same argument from multiple threads.
+	 * 
+	 * @param dbPath
+	 *            - the path of the database to connect to
 	 * @return a connection to the database.
-	 * @throws SQLException if a database access error occurs
+	 * @throws SQLException
+	 *             if a database access error occurs
 	 */
 	private SQLiteConnection getConnectionFromMap(String dbPath) throws SQLException {
 		SQLiteConnection existingConn = connectionMap.get(dbPath);
@@ -85,39 +195,6 @@ public class SQLiteConnector {
 		} else {
 			existingConn.incrementUsers();
 			return existingConn;
-		}
-	}
-	
-	public SQLiteConnection getConnection(String dbPath) {
-		if (IN_MEMORY_SUBNAME.equals(dbPath)) {
-			Lock lock = locks.get(IN_MEMORY_SUBNAME);
-			lock.lock();
-			try {				
-				return getConnectionFromMap(IN_MEMORY_SUBNAME);				
-			} finally {
-				lock.unlock();
-			}
-		}
-
-		try {
-			File dbFile = new File(dbPath);
-			String canonicalPath = dbFile.getCanonicalPath();
-			Lock lock = locks.get(canonicalPath);
-			lock.lock();
-			try {
-				if (dbFile.exists()) {
-					return getConnectionFromMap(canonicalPath);
-				} else if (createIfDoesNotExist) {
-					SQLiteConnection conn = new SQLiteConnection(dbPath);
-					connectionMap.put(canonicalPath, conn);
-					return conn;
-				}								
-				throw new FileNotFoundException("Can't get SQLite database connection. File doesn't exist: " + dbPath);
-			} finally {
-				lock.unlock();
-			}
-		} catch (IOException ex) {
-			throw new SQLException(ex);
 		}
 	}
 	
@@ -134,23 +211,23 @@ public class SQLiteConnector {
 		private final Connection conn;
 		
 		/** The canonical path of the database file this object is connected to. */
-		private final String dbPath;
+		private final String canonicalPath;
 		
 		/** The number of users (threads) currently using this connection. */
-		private final AtomicInteger numUsers = new AtomicInteger(1);
+		private int numUsers = 1;
 		
 		/**
 		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
 		 * typically a file path. In-memory databases may also be supported depending on the driver
 		 * being used.
-		 * @param subname - the path component of the connection URL
-		 * @throws SQLException
+		 * @param canonicalPath - the path of the database
+		 * @throws SQLException if a database access error occurs
 		 */
-		private SQLiteConnection(String subname) throws SQLException
+		private SQLiteConnection(String canonicalPath) throws SQLException
 		{
-			dbPath = subname;
-			conn = DriverManager.getConnection(connStringPrefix + subname);
-			// LogManager.logger.trace("New " + this + " created.");
+			this.canonicalPath = canonicalPath;
+			conn = DriverManager.getConnection(connStringPrefix + canonicalPath);
+			if (logger != null) logger.trace("New {} created.", this);
 		}
 		
 		/**
@@ -163,7 +240,7 @@ public class SQLiteConnector {
 		 */
 		private SQLiteConnection(String subname, Properties info) throws SQLException
 		{
-			this.dbPath = subname;
+			this.canonicalPath = subname;
 			conn = DriverManager.getConnection(connStringPrefix + subname, info);
 		}
 		
@@ -178,7 +255,7 @@ public class SQLiteConnector {
 		 */
 		private SQLiteConnection(String dbPath, String user, String password) throws SQLException
 		{
-			this.dbPath = dbPath;
+			this.canonicalPath = dbPath;
 			conn = DriverManager.getConnection(connStringPrefix + dbPath, user, password);
 		}
 
@@ -187,7 +264,7 @@ public class SQLiteConnector {
 		 */
 		private void incrementUsers()
 		{
-			logger.trace(this + " user count incremented to " + numUsers.incrementAndGet() + ".");
+			if (logger != null) logger.trace("{} user count incremented to {}.", this, ++numUsers);
 		}
 
 		@Override
@@ -218,14 +295,19 @@ public class SQLiteConnector {
 		public void close() throws SQLException
 		{
 			if (isClosed()) return;
-			logger.trace(this + " user count decremented.");
-			if (numUsers.decrementAndGet() == 0) {
-				try {
+			
+			Lock lock = locks.get(canonicalPath);
+			lock.lock();
+			try {
+				if (logger != null) logger.trace("{} user count decremented to {}.", this, --numUsers);
+				if (numUsers == 0) {
 					conn.close();
-					logger.trace(this + " underlying Connection closed.");
-				} catch (Exception e) {
-					logger.warn(e.getMessage());
+					if (logger != null) logger.trace("{} underlying Connection closed.", this);
 				}
+			} catch (Exception ex) {				
+				if (logger != null) logger.warn(ex.getMessage());
+			} finally {
+				lock.unlock();
 			}
 		}
 
@@ -531,7 +613,7 @@ public class SQLiteConnector {
 		@Override
 		public String toString()
 		{
-			return "[SQLiteConnection (" + dbPath + ")]";
+			return "[SQLiteConnection (" + canonicalPath + ")]";
 		}
 		
 	}

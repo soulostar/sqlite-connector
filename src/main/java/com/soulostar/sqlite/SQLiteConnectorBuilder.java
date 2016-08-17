@@ -3,11 +3,13 @@ package com.soulostar.sqlite;
 
 public class SQLiteConnectorBuilder {
 	
-	private String connStringPrefix = "jdbc:sqlite:";
+	private String subprotocol = "sqlite";
 	private int lockStripes = 5;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
 	private int concurrencyLevel = 16;
+	private boolean canCreate = true;
+	private boolean logging = false;
 	
 	// prevent instantiation
 	private SQLiteConnectorBuilder() {
@@ -35,11 +37,55 @@ public class SQLiteConnectorBuilder {
 		return new SQLiteConnectorBuilder();
 	}
 	
-	public SQLiteConnectorBuilder withConnStringPrefix(String connStringPrefix) {
-		this.connStringPrefix = connStringPrefix;
+	/**
+	 * Specifies that the connector <b>cannot</b> create database files with
+	 * {@link SQLiteConnector#getConnection(String)} - if the target database
+	 * does not exist, the method will throw a {@link FileNotFoundException} instead of
+	 * creating the database. Normally, the latter behavior is the default.
+	 * <p>
+	 * Note that a connector created with a builder that has called this method
+	 * can still create database files if missing, by calling the
+	 * {@link SQLiteConnector#getConnection(String, boolean)} overload.
+	 * 
+	 * @return this object, for chaining calls.
+	 */
+	public SQLiteConnectorBuilder cannotCreate() {
+		canCreate = false;
 		return this;
 	}
 	
+	/**
+	 * Specifies a custom subprotocol for the connector. SQLite connection
+	 * strings are constructed as
+	 * <code>jdbc:<i>subprotocol</i>:<i>path</i></code>.
+	 * <p>
+	 * In the vast majority of cases, the default value of <code>sqlite</code>
+	 * should be used, and it is unnecessary to call this method. This method is
+	 * provided on the off chance that there is a SQLite JDBC driver out there
+	 * that uses a different subprotocol.
+	 * 
+	 * @param subprotocol
+	 *            - the subprotocol the connector should use to build connection
+	 *            strings
+	 * @return this object, for chaining calls.
+	 */
+	public SQLiteConnectorBuilder withSubprotocol(String subprotocol) {
+		this.subprotocol = subprotocol;
+		return this;
+	}
+	
+	/**
+	 * Specifies the number of stripes to use for the get/close connections
+	 * lock.
+	 * <p>
+	 * The connector locks . A higher number of stripes
+	 * allows for increased concurrency at the cost of a bigger memory
+	 * footprint, while a lower stripe count saves memory at the cost of
+	 * decreased concurrency. The default stripe count is <code>5</code>.
+	 * 
+	 * @param lockStripes
+	 * @return
+	 */
 	public SQLiteConnectorBuilder withLockStripes(int lockStripes) {
 		this.lockStripes = lockStripes;
 		return this;
@@ -60,13 +106,20 @@ public class SQLiteConnectorBuilder {
 		return this;
 	}
 	
+	public SQLiteConnectorBuilder withLogging() {
+		logging = true;
+		return this;
+	}
+	
 	public SQLiteConnector build() {
 		return new SQLiteConnector(
-			connStringPrefix,
+			subprotocol,
 			lockStripes,
 			initialCapacity,
 			loadFactor,
-			concurrencyLevel
+			concurrencyLevel,
+			canCreate,
+			logging
 		);
 	}
 }
