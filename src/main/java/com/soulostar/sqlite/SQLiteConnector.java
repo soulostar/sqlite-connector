@@ -206,7 +206,7 @@ public class SQLiteConnector {
 	 * @see SQLiteConnector
 	 *
 	 */
-	private class SQLiteConnection implements AutoCloseable, Connection {
+	private class SQLiteConnection implements Connection {
 		
 		/** The connection being wrapped by this object. */
 		private final Connection conn;
