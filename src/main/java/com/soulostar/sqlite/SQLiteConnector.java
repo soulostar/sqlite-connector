@@ -46,7 +46,8 @@ import com.google.common.util.concurrent.Striped;
  */
 public class SQLiteConnector {
 	
-	private static final String IN_MEMORY_SUBNAME = ":memory:";
+	// package access for testing
+	static final String IN_MEMORY_SUBNAME = ":memory:";
 
 	private final Logger logger;
 
@@ -234,29 +235,29 @@ public class SQLiteConnector {
 		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
 		 * typically a file path. In-memory databases may also be supported depending on the driver
 		 * being used.
-		 * @param subname
+		 * @param canonicalPath
 		 * @param info
 		 * @throws SQLException
 		 */
-		private SQLiteConnection(String subname, Properties info) throws SQLException
+		private SQLiteConnection(String canonicalPath, Properties info) throws SQLException
 		{
-			this.canonicalPath = subname;
-			conn = DriverManager.getConnection(connStringPrefix + subname, info);
+			this.canonicalPath = canonicalPath;
+			conn = DriverManager.getConnection(connStringPrefix + canonicalPath, info);
 		}
 		
 		/**
 		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
 		 * typically a file path. In-memory databases may also be supported depending on the driver
 		 * being used.
-		 * @param dbPath
+		 * @param canonicalPath
 		 * @param user
 		 * @param password
 		 * @throws SQLException
 		 */
-		private SQLiteConnection(String dbPath, String user, String password) throws SQLException
+		private SQLiteConnection(String canonicalPath, String user, String password) throws SQLException
 		{
-			this.canonicalPath = dbPath;
-			conn = DriverManager.getConnection(connStringPrefix + dbPath, user, password);
+			this.canonicalPath = canonicalPath;
+			conn = DriverManager.getConnection(connStringPrefix + canonicalPath, user, password);
 		}
 
 		/**
