@@ -1,16 +1,22 @@
 package com.soulostar.sqlite;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.soulostar.sqlite.Utils.checkString;
+
+import java.io.FileNotFoundException;
 import java.util.Properties;
 
 public class SQLiteConnectorBuilder {
 	
 	private String subprotocol = "sqlite";
-	private Properties defaultProperties = null;
+	private Properties properties;
+	private String user;
+	private String password;
 	private int lockStripes = 5;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
 	private int concurrencyLevel = 16;
-	private boolean canCreate = true;
+	private boolean canCreateDatabases = true;
 	private boolean logging = false;
 	
 	// prevent instantiation
@@ -32,7 +38,15 @@ public class SQLiteConnectorBuilder {
 	 *             <td><code>sqlite</code></td>
 	 *         </tr>
 	 *         <tr>
-	 *             <td><code>defaultProperties</code></td>
+	 *             <td><code>properties</code></td>
+	 *             <td><code>null (will be ignored)</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>user</code></td>
+	 *             <td><code>null (will be ignored)</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>password</code></td>
 	 *             <td><code>null (will be ignored)</code></td>
 	 *         </tr>
 	 *         <tr>
@@ -52,7 +66,7 @@ public class SQLiteConnectorBuilder {
 	 *             <td><code>16</code></td>
 	 *         </tr>
 	 *         <tr>
-	 *             <td><code>canCreate</code></td>
+	 *             <td><code>canCreateDatabases</code></td>
 	 *             <td><code>true</code></td>
 	 *         </tr>
 	 *         <tr>
@@ -88,8 +102,8 @@ public class SQLiteConnectorBuilder {
 	 * 
 	 * @return this object, for chaining calls.
 	 */
-	public SQLiteConnectorBuilder cannotCreate() {
-		canCreate = false;
+	public SQLiteConnectorBuilder cannotCreateDatabases() {
+		canCreateDatabases = false;
 		return this;
 	}
 	
@@ -109,12 +123,57 @@ public class SQLiteConnectorBuilder {
 	 * @return this object, for chaining calls.
 	 */
 	public SQLiteConnectorBuilder withSubprotocol(String subprotocol) {
+		checkString(subprotocol, "Subprotocol");
+		
 		this.subprotocol = subprotocol;
 		return this;
 	}
 	
-	public SQLiteConnectorBuilder withDefaultProperties(Properties properties) {
-		this.defaultProperties = properties;
+	/**
+	 * Specifies the properties connections should be opened with. For example,
+	 * in order to enforce foreign key constraints with any opened connections,
+	 * call this method and provide a <code>Properties</code> object containing
+	 * the appropriate key-value pair. How to do this varies by driver.
+	 * <p>
+	 * If this method is called, it will take precedence over
+	 * {@link #withConnectionCredentials(String, String)}; the latter method
+	 * call will have no effect on connectors created with this builder. If user
+	 * credentials as well as other properties are both needed, the credentials
+	 * should be supplied as properties in the <code>Properties</code> argument
+	 * of this method.
+	 * 
+	 * @param properties
+	 *            - properties shared connections should be opened with
+	 * @return this object, for chaining calls.
+	 */
+	public SQLiteConnectorBuilder withConnectionProperties(Properties properties) {
+		checkNotNull(properties, "Properties");
+		
+		this.properties = properties;
+		return this;
+	}
+	
+	/**
+	 * Specifies the credentials connections should be opened with, for
+	 * databases that are configured to use authentication.
+	 * <p>
+	 * <b>Note</b>: This method has no effect on any connectors created with
+	 * this builder if {@link #withConnectionProperties(Properties)} has also
+	 * been called. Credentials can be supplied in the <code>Properties</code>
+	 * object argument of that method if necessary.
+	 * 
+	 * @param user
+	 *            - the database user on whose behalf connections will be made
+	 * @param password
+	 *            - the user's password
+	 * @return this object, for chaining calls.
+	 */
+	public SQLiteConnectorBuilder withConnectionCredentials(String user, String password) {
+		checkString(user, "User");
+		checkString(password, "Password");
+		
+		this.user = user;
+		this.password = password;
 		return this;
 	}
 	
@@ -156,22 +215,39 @@ public class SQLiteConnectorBuilder {
 		return this;
 	}
 	
+	/**
+	 * Turns on logging for built connectors. Informational logging will be done
+	 * at the <code>trace</code> level, while warnings will be logged at the
+	 * <code>warn</code> level. Nothing will be logged by the connector at any
+	 * other levels.
+	 * <p>
+	 * Note that the connector uses SLF4J to log, so a SLF4J binding is required
+	 * to see the log output.
+	 * 
+	 * @return this object, for chaining calls.
+	 */
 	public SQLiteConnectorBuilder withLogging() {
 		logging = true;
 		return this;
 	}
 	
+	/**
+	 * Builds and returns a new {@link SQLiteConnector} instance that uses
+	 * the configuration of this builder.
+	 * 
+	 * @return a new <code>SQLiteConnector</code> instance.
+	 */
 	public SQLiteConnector build() {
 		return new SQLiteConnector(
 			subprotocol,
-			defaultProperties,
-			"dummyuser",
-			"dummypassword",
+			properties,
+			user,
+			password,
 			lockStripes,
 			initialCapacity,
 			loadFactor,
 			concurrencyLevel,
-			canCreate,
+			canCreateDatabases,
 			logging
 		);
 	}

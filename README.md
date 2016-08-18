@@ -40,5 +40,6 @@ at some point in your code first, before using this connector.
 
 ## Todo
 
-Add support for the `DriverManager.getConnection` overloads that take a `Properties` object, and a `user` + `password`. These two overloads must be handled with care - in situations where two concurrent requesters for the same database want to access the database with different properties or different users + passwords, returning the same connection to both requesters would lead to unexpected behavior. How to go about handling this is TBD.
+Add support for associating different user/password credentials with different databases,
+instead of using the same credentials for all shared connections.
 

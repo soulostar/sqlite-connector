@@ -1,7 +1,7 @@
 package com.soulostar.sqlite;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.soulostar.sqlite.Utils.checkString;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,11 +51,11 @@ public class SQLiteConnector {
 
 	private final Logger logger;
 
-	private final String connStringPrefix;
+	private final String connectionStringPrefix;
 	
-	private final Properties defaultProperties;
-	private final String defaultUser;
-	private final String defaultPassword;
+	private final Properties properties;
+	private final String user;
+	private final String password;
 	
 	/**
 	 * A map that maps canonical paths to SQLite connections. Paths of any other
@@ -68,33 +68,33 @@ public class SQLiteConnector {
 	private final Map<String, SQLiteConnection> connectionMap;
 	private final Striped<Lock> locks;
 	
-	private final boolean canCreate;
+	private final boolean canCreateDatabases;
 	
 	SQLiteConnector(
 		String subprotocol,
-		Properties defaultProperties,
-		String defaultUser,
-		String defaultPassword,
+		Properties properties,
+		String user,
+		String password,
 		int lockStripes,
 		int initialCapacity,
 		float loadFactor,
 		int concurrencyLevel,
-		boolean canCreate,
+		boolean canCreateDatabases,
 		boolean logging
 	) {
-		connStringPrefix = "jdbc:" + subprotocol + ":";
-		this.defaultProperties = defaultProperties;
-		this.defaultUser = defaultUser;
-		this.defaultPassword = defaultPassword;
+		connectionStringPrefix = "jdbc:" + subprotocol + ":";
+		this.properties = properties;
+		this.user = user;
+		this.password = password;
 		locks = Striped.lock(lockStripes);
 		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
-		this.canCreate = canCreate;
+		this.canCreateDatabases = canCreateDatabases;
 		logger = logging ? LoggerFactory.getLogger(SQLiteConnector.class) : null;
 	}
 	
 	/**
 	 * Gets a connection to the database at the specified path. If the database
-	 * does not exist and {@link SQLiteConnectorBuilder#cannotCreate()} was
+	 * does not exist and {@link SQLiteConnectorBuilder#cannotCreateDatabases()} was
 	 * <b>not</b> called during the building of this connector, the database
 	 * will be created and a connection to the newly created database will be
 	 * returned.
@@ -118,7 +118,7 @@ public class SQLiteConnector {
 	 *             if an I/O error occurs while constructing canonical paths
 	 */
 	public Connection getConnection(String dbPath) throws SQLException, IOException {
-		return getConnection(dbPath, canCreate);
+		return getConnection(dbPath, canCreateDatabases);
 	}
 	
 	/**
@@ -147,8 +147,7 @@ public class SQLiteConnector {
 	 *             if an I/O error occurs while constructing canonical paths
 	 */
 	public Connection getConnection(String dbPath, boolean createIfDoesNotExist) throws SQLException, IOException {
-		checkNotNull(dbPath, "Database path is null.");
-		checkArgument(!dbPath.isEmpty(), "Database path is empty.");
+		checkString(dbPath, "Database path");
 		
 		if (IN_MEMORY_SUBNAME.equals(dbPath)) {
 			Lock lock = locks.get(IN_MEMORY_SUBNAME);
@@ -182,37 +181,91 @@ public class SQLiteConnector {
 	}
 	
 	/**
-	 * Gets an <b>unshared</b> connection to the database at the specified path.
+	 * Gets an <b>unshared</b> connection to a database, without using any
+	 * properties or credentials.
 	 * <p>
-	 * This method does not use this connector's connection sharing functionality.
-	 * It is just for convenience. Connection sharing can't be done because if there
-	 * is an existing shared connection to the specified database, it may not have
-	 * the same properties as the ones passed into this method.
-	 * @param dbPath - the path of the database to connect to
-	 * @param info - a properties object containing connection properties such as
-	 * whether or not to enforce foreign key constraints
-	 * @return an <b>unshared</b> connection to the database at the specified path.
-	 * @throws SQLException if a database access error occurs
+	 * This method is provided for convenience, facilitating opening of
+	 * connections that do not use the properties/credentials this connector was
+	 * configured with. Such connections can't be shared, as sharing them would
+	 * lead to unexpected and most likely incorrect behavior. See the overloads
+	 * for this method for more details.
+	 * 
+	 * @param dbPath
+	 *            - the path of the database to connect to
+	 * @return an <b>unshared</b> connection to the database at the specified
+	 *         path.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 * @see {@link #getUnsharedConnection(String, Properties)}
+	 * @see {@link #getUnsharedConnection(String, String, String)}
 	 */
-	public Connection getConnection(String dbPath, Properties info) throws SQLException {
-		return DriverManager.getConnection(connStringPrefix + dbPath, info);
+	public Connection getUnsharedConnection(String dbPath) throws SQLException {
+		checkString(dbPath, "Database path");
+		
+		return DriverManager.getConnection(connectionStringPrefix + dbPath);
 	}
 	
 	/**
-	 * Gets an <b>unshared</b> connection to the database at the specified path.
+	 * Gets an <b>unshared</b> connection to a database using the specified
+	 * properties.
 	 * <p>
-	 * This method does not use this connector's connection sharing functionality.
-	 * It is just for convenience. Connection sharing can't be done because if there
-	 * is an existing shared connection to the specified database, it would be returned
-	 * without validating the user/password credentials provided.
-	 * @param dbPath - the path of the database to connect to
-	 * @param user - the database user on whose behalf the connection is being made
-	 * @param password - the user's password
-	 * @return an <b>unshared</b> connection to the database at the specified path.
-	 * @throws SQLException if a database access error occurs
+	 * This method does not use this connector's connection sharing
+	 * functionality. It is just for convenience. Connection sharing can't be
+	 * done because if there is an existing shared connection to the specified
+	 * database, it may not have the same properties as the ones passed into
+	 * this method, and the caller expects to get a connection using the
+	 * properties it provided.
+	 * 
+	 * @param dbPath
+	 *            - the path of the database to connect to
+	 * @param info
+	 *            - a properties object containing connection properties such as
+	 *            whether or not to enforce foreign key constraints. If null,
+	 *            the returned connection will not use any properties.
+	 * @return an <b>unshared</b> connection to the database at the specified
+	 *         path.
+	 * @throws SQLException
+	 *             if a database access error occurs
 	 */
-	public Connection getConnection(String dbPath, String user, String password) throws SQLException {
-		return DriverManager.getConnection(connStringPrefix + dbPath, user, password);
+	public Connection getUnsharedConnection(String dbPath, Properties info) throws SQLException {
+		checkString(dbPath, "Database path");
+		checkNotNull(info, "Properties argument is null.");
+		
+		return DriverManager.getConnection(connectionStringPrefix + dbPath, info);
+	}
+	
+	/**
+	 * Gets an <b>unshared</b> connection to the database using the provided
+	 * credentials.
+	 * <p>
+	 * This method does not use this connector's connection sharing
+	 * functionality. It is just for convenience. Connection sharing can't be
+	 * done because if there is an existing shared connection to the specified
+	 * database, it would have to be returned without validating the
+	 * user/password credentials provided. We <i>could</i> validate the
+	 * credentials by attempting to establish a test connection and then
+	 * returning the existing connection if valid, but at that point we are
+	 * going to have to deal with file locks anyways, which negates the
+	 * performance benefit of sharing connections.
+	 * 
+	 * @param dbPath
+	 *            - the path of the database to connect to
+	 * @param user
+	 *            - the database user on whose behalf the connection is being
+	 *            made
+	 * @param password
+	 *            - the user's password
+	 * @return an <b>unshared</b> connection to the database at the specified
+	 *         path.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 */
+	public Connection getUnsharedConnection(String dbPath, String user, String password) throws SQLException {
+		checkString(dbPath, "Database path");
+		checkString(user, "User");
+		checkString(password, "Password");
+		
+		return DriverManager.getConnection(connectionStringPrefix + dbPath, user, password);
 	}
 	
 
@@ -245,9 +298,12 @@ public class SQLiteConnector {
 	}
 	
 	/**
-	 * A <code>Connection</code> wrapper/replacement class that stores the path of the .db file the connection is using and tracks 
-	 * the number of users currently using the connection. Intended for use with SQLite connections, since multiple 
-	 * threads can use the same connection for SQLite.
+	 * A <code>Connection</code> wrapper/replacement class that stores the
+	 * canonical path of the database the connection is using and tracks the
+	 * number of users currently using the connection. Intended for use with
+	 * SQLite connections, since multiple threads can use the same connection
+	 * for SQLite.
+	 * 
 	 * @see SQLiteConnector
 	 *
 	 */
@@ -263,21 +319,38 @@ public class SQLiteConnector {
 		private int numUsers = 1;
 		
 		/**
-		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
-		 * typically a file path. In-memory databases may also be supported depending on the driver
-		 * being used.
-		 * @param canonicalPath - the path of the database
-		 * @throws SQLException if a database access error occurs
+		 * Creates a new <code>SQLiteConnection</code> to the database indicated
+		 * by the given subname, typically a file path. In-memory databases may
+		 * also be supported depending on the driver being used.
+		 * 
+		 * @param canonicalPath
+		 *            - the path of the database
+		 * @throws SQLException
+		 *             if a database access error occurs
 		 */
 		private SQLiteConnection(String canonicalPath) throws SQLException
 		{
 			this.canonicalPath = canonicalPath;
-			conn = DriverManager.getConnection(connStringPrefix + canonicalPath);
+			
+			String url = connectionStringPrefix + canonicalPath;
+			if (properties != null) {
+				conn = DriverManager.getConnection(url, properties);
+			} else if (user != null && password != null) {
+				conn = DriverManager.getConnection(url, user, password);
+			} else {
+				conn = DriverManager.getConnection(url);				
+			}
+			
 			if (logger != null) logger.trace("New {} created.", this);
 		}
 
 		/**
-		 * Increments the user count for this <code>SQLiteConnection</code> by 1.
+		 * Increments the user count for this <code>SQLiteConnection</code> by
+		 * 1.
+		 * <p>
+		 * <b>Note</b>: This method should only be called from within a
+		 * lock-protected try block. It can produce incorrect behavior if called
+		 * outside of locked sections from multiple threads.
 		 */
 		private void incrementUsers()
 		{
