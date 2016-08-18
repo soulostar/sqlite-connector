@@ -1,9 +1,11 @@
 package com.soulostar.sqlite;
 
+import java.util.Properties;
 
 public class SQLiteConnectorBuilder {
 	
 	private String subprotocol = "sqlite";
+	private Properties defaultProperties = null;
 	private int lockStripes = 5;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
@@ -17,21 +19,57 @@ public class SQLiteConnectorBuilder {
 	
 	/**
 	 * Creates and returns a new <code>SQLiteConnectorBuilder</code> with default parameter values.
-	 * Default values are as follows:
-	 * <p>
 	 * <table>
-	 * <thead><tr><th>Parameter</th><th>Default Value</th></tr></thead>
-	 * <tbody>
-	 * <tr><td><code>connStringPrefix</code></td><td><code>jdbc:sqlite:</code></td></tr>
-	 * <tr><td><code>lockStripes</code></td><td><code>5</code></td></tr>
-	 * <tr><td><code>initialCapacity</code></td><td><code>16</code></td></tr>
-	 * <tr><td><code>loadFactor</code></td><td><code>0.75</code></td></tr>
-	 * <tr><td><code>concurrencyLevel</code></td><td><code>16</code></td></tr>
-	 * </tbody>
+	 *     <thead>
+	 *         <tr>
+	 *             <th>Parameter</th>
+	 *             <th>Default Value</th>
+	 *         </tr>
+	 *     </thead>
+	 *     <tbody>
+	 *         <tr>
+	 *             <td><code>subprotocol</code></td>
+	 *             <td><code>sqlite</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>defaultProperties</code></td>
+	 *             <td><code>null (will be ignored)</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>lockStripes</code></td>
+	 *             <td><code>5</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>initialCapacity</code></td>
+	 *             <td><code>16</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>loadFactor</code></td>
+	 *             <td><code>0.75</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>concurrencyLevel</code></td>
+	 *             <td><code>16</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>canCreate</code></td>
+	 *             <td><code>true</code></td>
+	 *         </tr>
+	 *         <tr>
+	 *             <td><code>logging</code></td>
+	 *             <td><code>false</code></td>
+	 *         </tr>
+	 *     </tbody>
 	 * </table>
 	 * <p>
-	 * To get a default-configuration {@link SQLiteConnector}, just immediately call {@link #build()}.
-	 * @return
+	 * To get a default-configuration {@link SQLiteConnector}, just immediately
+	 * call {@link #build()}.
+	 * <p>
+	 * If you don't want to use default settings, this builder provides methods
+	 * to configure each of the above listed parameters before building the
+	 * connector.
+	 * 
+	 * @return a new <code>SQLiteConnectorBuilder</code> with default parameters.
 	 */
 	public static SQLiteConnectorBuilder newBuilder() {
 		return new SQLiteConnectorBuilder();
@@ -40,8 +78,9 @@ public class SQLiteConnectorBuilder {
 	/**
 	 * Specifies that the connector <b>cannot</b> create database files with
 	 * {@link SQLiteConnector#getConnection(String)} - if the target database
-	 * does not exist, the method will throw a {@link FileNotFoundException} instead of
-	 * creating the database. Normally, the latter behavior is the default.
+	 * does not exist, the method will throw a {@link FileNotFoundException}
+	 * instead of creating the database. Normally, the latter behavior is the
+	 * default.
 	 * <p>
 	 * Note that a connector created with a builder that has called this method
 	 * can still create database files if missing, by calling the
@@ -71,6 +110,11 @@ public class SQLiteConnectorBuilder {
 	 */
 	public SQLiteConnectorBuilder withSubprotocol(String subprotocol) {
 		this.subprotocol = subprotocol;
+		return this;
+	}
+	
+	public SQLiteConnectorBuilder withDefaultProperties(Properties properties) {
+		this.defaultProperties = properties;
 		return this;
 	}
 	
@@ -120,6 +164,9 @@ public class SQLiteConnectorBuilder {
 	public SQLiteConnector build() {
 		return new SQLiteConnector(
 			subprotocol,
+			defaultProperties,
+			"dummyuser",
+			"dummypassword",
 			lockStripes,
 			initialCapacity,
 			loadFactor,

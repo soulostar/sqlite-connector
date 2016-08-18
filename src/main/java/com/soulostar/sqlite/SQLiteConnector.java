@@ -53,6 +53,10 @@ public class SQLiteConnector {
 
 	private final String connStringPrefix;
 	
+	private final Properties defaultProperties;
+	private final String defaultUser;
+	private final String defaultPassword;
+	
 	/**
 	 * A map that maps canonical paths to SQLite connections. Paths of any other
 	 * kind (relative, absolute) should not be used as keys. Also note that the
@@ -68,6 +72,9 @@ public class SQLiteConnector {
 	
 	SQLiteConnector(
 		String subprotocol,
+		Properties defaultProperties,
+		String defaultUser,
+		String defaultPassword,
 		int lockStripes,
 		int initialCapacity,
 		float loadFactor,
@@ -76,6 +83,9 @@ public class SQLiteConnector {
 		boolean logging
 	) {
 		connStringPrefix = "jdbc:" + subprotocol + ":";
+		this.defaultProperties = defaultProperties;
+		this.defaultUser = defaultUser;
+		this.defaultPassword = defaultPassword;
 		locks = Striped.lock(lockStripes);
 		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
 		this.canCreate = canCreate;
@@ -107,7 +117,7 @@ public class SQLiteConnector {
 	 * @throws IOException
 	 *             if an I/O error occurs while constructing canonical paths
 	 */
-	public SQLiteConnection getConnection(String dbPath) throws SQLException, IOException {
+	public Connection getConnection(String dbPath) throws SQLException, IOException {
 		return getConnection(dbPath, canCreate);
 	}
 	
@@ -136,7 +146,7 @@ public class SQLiteConnector {
 	 * @throws IOException
 	 *             if an I/O error occurs while constructing canonical paths
 	 */
-	public SQLiteConnection getConnection(String dbPath, boolean createIfDoesNotExist) throws SQLException, IOException {
+	public Connection getConnection(String dbPath, boolean createIfDoesNotExist) throws SQLException, IOException {
 		checkNotNull(dbPath, "Database path is null.");
 		checkArgument(!dbPath.isEmpty(), "Database path is empty.");
 		
@@ -170,6 +180,41 @@ public class SQLiteConnector {
 			lock.unlock();
 		}
 	}
+	
+	/**
+	 * Gets an <b>unshared</b> connection to the database at the specified path.
+	 * <p>
+	 * This method does not use this connector's connection sharing functionality.
+	 * It is just for convenience. Connection sharing can't be done because if there
+	 * is an existing shared connection to the specified database, it may not have
+	 * the same properties as the ones passed into this method.
+	 * @param dbPath - the path of the database to connect to
+	 * @param info - a properties object containing connection properties such as
+	 * whether or not to enforce foreign key constraints
+	 * @return an <b>unshared</b> connection to the database at the specified path.
+	 * @throws SQLException if a database access error occurs
+	 */
+	public Connection getConnection(String dbPath, Properties info) throws SQLException {
+		return DriverManager.getConnection(connStringPrefix + dbPath, info);
+	}
+	
+	/**
+	 * Gets an <b>unshared</b> connection to the database at the specified path.
+	 * <p>
+	 * This method does not use this connector's connection sharing functionality.
+	 * It is just for convenience. Connection sharing can't be done because if there
+	 * is an existing shared connection to the specified database, it would be returned
+	 * without validating the user/password credentials provided.
+	 * @param dbPath - the path of the database to connect to
+	 * @param user - the database user on whose behalf the connection is being made
+	 * @param password - the user's password
+	 * @return an <b>unshared</b> connection to the database at the specified path.
+	 * @throws SQLException if a database access error occurs
+	 */
+	public Connection getConnection(String dbPath, String user, String password) throws SQLException {
+		return DriverManager.getConnection(connStringPrefix + dbPath, user, password);
+	}
+	
 
 	/**
 	 * Attempts to retrieve an existing connection for the specified path from
@@ -229,35 +274,6 @@ public class SQLiteConnector {
 			this.canonicalPath = canonicalPath;
 			conn = DriverManager.getConnection(connStringPrefix + canonicalPath);
 			if (logger != null) logger.trace("New {} created.", this);
-		}
-		
-		/**
-		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
-		 * typically a file path. In-memory databases may also be supported depending on the driver
-		 * being used.
-		 * @param canonicalPath
-		 * @param info
-		 * @throws SQLException
-		 */
-		private SQLiteConnection(String canonicalPath, Properties info) throws SQLException
-		{
-			this.canonicalPath = canonicalPath;
-			conn = DriverManager.getConnection(connStringPrefix + canonicalPath, info);
-		}
-		
-		/**
-		 * Creates a new <code>SQLiteConnection</code> to the database indicated by the given subname,
-		 * typically a file path. In-memory databases may also be supported depending on the driver
-		 * being used.
-		 * @param canonicalPath
-		 * @param user
-		 * @param password
-		 * @throws SQLException
-		 */
-		private SQLiteConnection(String canonicalPath, String user, String password) throws SQLException
-		{
-			this.canonicalPath = canonicalPath;
-			conn = DriverManager.getConnection(connStringPrefix + canonicalPath, user, password);
 		}
 
 		/**
