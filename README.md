@@ -60,7 +60,7 @@ Class.forName("org.sqlite.JDBC");
 at some point in your code first, before using this connector.
 
 ## Todo
-
-Add support for associating different user/password credentials with different databases,
+- Write tests
+- Add support for associating different user/password credentials with different databases,
 instead of using the same credentials for all shared connections.
 
