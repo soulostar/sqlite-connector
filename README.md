@@ -14,13 +14,7 @@ Keep in mind that this library is written for use with SQLite's serialized mode.
 
 ## Usage
 
-You can obtain an instance of `SQLiteConnector` by using the `SQLiteConnectorBuilder` class.
-The builder contains a number of configuration methods to allow customization, but in many cases
-the default configuration will work fine and you may simply write:
-```java
-SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
-```
-
+### What this library does
 The primary function of this library is illustrated in the following code snippet (albeit in an impractical way):
 ```java
 try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
@@ -31,6 +25,27 @@ try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
     }
 }
 ```
+
+### Obtaining an instance
+
+You can obtain an instance of `SQLiteConnector` by using the `SQLiteConnectorBuilder` class.
+The builder contains a number of configuration methods to allow customization, but in some cases
+the default configuration will work fine and you may simply write:
+```java
+SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
+```
+In most cases, you will at least want to enable foreign key constraints on connections the connector creates.
+How to accomplish this may vary by driver. Assuming usage of [Xerial's SQLite JDBC driver](https://github.com/xerial/sqlite-jdbc), this can be done as follows:
+```java
+SQLiteConfig config = new SQLiteConfig();
+config.enforceForeignKeys(true);
+SQLiteConnector connector = SQLiteConnectorBuilder
+    .newBuilder()
+    .withConnectionProperties(config.toProperties())
+    .build();
+```
+
+### Loading drivers
 
 Note that this library does not handle loading drivers. Typically, you would call
 ```java
