@@ -12,7 +12,7 @@ public class SQLiteConnectorBuilder {
 	private Properties properties;
 	private String user;
 	private String password;
-	private int lockStripes = 5;
+	private int lockStripes = 4;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
 	private int concurrencyLevel = 16;
@@ -51,7 +51,7 @@ public class SQLiteConnectorBuilder {
 	 *         </tr>
 	 *         <tr>
 	 *             <td><code>lockStripes</code></td>
-	 *             <td><code>5</code></td>
+	 *             <td><code>4</code></td>
 	 *         </tr>
 	 *         <tr>
 	 *             <td><code>initialCapacity</code></td>
@@ -188,7 +188,7 @@ public class SQLiteConnectorBuilder {
 	 * <b>different</b> canonical paths to proceed without locking. A higher
 	 * number of stripes allows for increased concurrency at the cost of a
 	 * bigger memory footprint, while a lower stripe count saves memory at the
-	 * cost of decreased concurrency. The default stripe count is <code>5</code>
+	 * cost of decreased concurrency. The default stripe count is <code>4</code>
 	 * .
 	 * 
 	 * @param lockStripes
