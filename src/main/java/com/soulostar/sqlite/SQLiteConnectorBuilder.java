@@ -221,7 +221,7 @@ public class SQLiteConnectorBuilder {
 	 * <code>warn</code> level. Nothing will be logged by the connector at any
 	 * other levels.
 	 * <p>
-	 * Note that the connector uses SLF4J to log, so a SLF4J binding is required
+	 * Note that the connector uses SLF4J to log, so an SLF4J binding is required
 	 * to see the log output.
 	 * 
 	 * @return this object, for chaining calls.
