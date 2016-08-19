@@ -45,17 +45,16 @@ import com.google.common.util.concurrent.Striped;
  * @author Sidney Tang
  */
 public class SQLiteConnector {
-	
-	// package access for testing
+
 	static final String IN_MEMORY_SUBNAME = ":memory:";
 
-	private final Logger logger;
+	final Logger logger;
 
-	private final String connectionStringPrefix;
+	final String connectionStringPrefix;
 	
-	private final Properties properties;
-	private final String user;
-	private final String password;
+	final Properties properties;
+	final String user;
+	final String password;
 	
 	/**
 	 * A map that maps canonical paths to SQLite connections. Paths of any other
@@ -66,9 +65,9 @@ public class SQLiteConnector {
 	 * @see {@link File#getCanonicalPath()}
 	 */
 	private final Map<String, SQLiteConnection> connectionMap;
-	private final Striped<Lock> locks;
+	final Striped<Lock> locks;
 	
-	private final boolean canCreateDatabases;
+	final boolean canCreateDatabases;
 	
 	SQLiteConnector(
 		String subprotocol,

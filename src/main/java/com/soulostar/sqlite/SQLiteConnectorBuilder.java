@@ -8,16 +8,16 @@ import java.util.Properties;
 
 public class SQLiteConnectorBuilder {
 	
-	private String subprotocol = "sqlite";
-	private Properties properties;
-	private String user;
-	private String password;
-	private int lockStripes = 4;
+	String subprotocol = "sqlite";
+	Properties properties;
+	String user;
+	String password;
+	int lockStripes = 4;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
 	private int concurrencyLevel = 16;
-	private boolean canCreateDatabases = true;
-	private boolean logging = false;
+	boolean canCreateDatabases = true;
+	boolean logging = false;
 	
 	// prevent instantiation
 	private SQLiteConnectorBuilder() {
@@ -170,7 +170,7 @@ public class SQLiteConnectorBuilder {
 	 */
 	public SQLiteConnectorBuilder withConnectionCredentials(String user, String password) {
 		checkString(user, "User");
-		checkString(password, "Password");
+		checkNotNull(password, "Password");
 		
 		this.user = user;
 		this.password = password;
@@ -240,7 +240,7 @@ public class SQLiteConnectorBuilder {
 	public SQLiteConnector build() {
 		return new SQLiteConnector(
 			subprotocol,
-			properties,
+			copyProperties(),
 			user,
 			password,
 			lockStripes,
@@ -250,5 +250,13 @@ public class SQLiteConnectorBuilder {
 			canCreateDatabases,
 			logging
 		);
+	}
+	
+	private Properties copyProperties() {
+		if (properties == null) return null;
+
+		Properties copy = new Properties();
+		copy.putAll(properties);
+		return copy;
 	}
 }
