@@ -24,16 +24,15 @@ class Utils {
 	 *            example, <code>"Username"</code> will lead to an error message
 	 *            that reads <code>"Username is null."</code> if the string is
 	 *            null, or <code>"Username is empty."</code> if it's empty. Note
-	 *            that this name should typically be capitalized.
+	 *            that this name should typically be capitalized. If this is null,
+	 *            it will default to <code>"String"</code>.
 	 * @throws NullPointerException
-	 *             if <code>str</code> is null. This can also be thrown if
-	 *             <code>name</code> is null, but as this is an internal method
-	 *             and <code>name</code> is expected to be a string literal, we
-	 *             do not expect this to happen. Call this correctly!
+	 *             if <code>str</code> is null.
 	 * @throws IllegalArgumentException
 	 *             if <code>str</code> is empty
 	 */
 	static void checkString(String str, String name) {
+		if (name == null) name = "String";
 		checkNotNull(str, "%s is null.", name);
 		checkArgument(!str.isEmpty(), "%s is empty.", name);
 	}
