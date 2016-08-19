@@ -141,6 +141,10 @@ public class SQLiteConnectorBuilder {
 	 * credentials as well as other properties are both needed, the credentials
 	 * should be supplied as properties in the <code>Properties</code> argument
 	 * of this method.
+	 * <p>
+	 * The properties object of this builder is copied each time
+	 * {@link #build()} is called, so connectors each have their own reference
+	 * to a distinct properties object.
 	 * 
 	 * @param properties
 	 *            - properties shared connections should be opened with
