@@ -2,7 +2,6 @@ package com.soulostar.sqlite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -63,32 +62,11 @@ public class SQLiteConnectorBuilderTest {
 	}
 	
 	@Test
-	public void withConnectionProperties_propertyReferencesShouldNotBeEqual() {
+	public void withConnectionProperties_propertiesShouldBeCopiedOnBuild() {
 		Properties properties = new Properties();
-		builder.withConnectionProperties(properties);
-		
-		SQLiteConnector connector1 = builder.build();
-		SQLiteConnector connector2 = builder.build();
-		
-		assertTrue("Properties for connectors built with the same builder should not use the same object reference",
-				connector1.properties != connector2.properties);
-	}
-
-	@Test
-	public void withConnectionProperties_propertiesShouldDifferIfBuilderMutatedBetweenConstruction() {
-		Properties properties = new Properties();
-		builder.withConnectionProperties(properties);
-		
-		properties.setProperty("prop1", "This property should be in both connectors.");
-		SQLiteConnector connector1 = builder.build();
-		
-		properties.setProperty("propTwo", "This property should only be in the second connector.");
-		SQLiteConnector connector2 = builder.build();
-
-		assertNotEquals(
-				"Connectors built with the same builder should have equal properties if " 
-				+ "the builder's properties were mutated in between the connectors' construction",
-				connector1.properties, connector2.properties);
+		SQLiteConnector connector = builder.withConnectionProperties(properties).build();
+		assertTrue("Connectors should not be built with the same properties object reference as their builder",
+				connector.properties != builder.properties);
 	}
 	
 	@Test
