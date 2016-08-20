@@ -262,7 +262,7 @@ public class SQLiteConnector {
 	public Connection getUnsharedConnection(String dbPath, String user, String password) throws SQLException {
 		checkString(dbPath, "Database path");
 		checkString(user, "User");
-		checkString(password, "Password");
+		checkNotNull(password, "Password");
 		
 		return DriverManager.getConnection(connectionStringPrefix + dbPath, user, password);
 	}
