@@ -92,10 +92,6 @@ public class SQLiteConnectorTest {
 			try (Connection conn1 = connector.getConnection(relative1)) {
 				try (Connection conn2 = connector.getConnection(absolute)) {
 					try (Connection conn3 = connector.getConnection(canonical)) {
-						System.out.println(conn);
-						System.out.println(conn1);
-						System.out.println(conn2);
-						System.out.println(conn3);
 						assertTrue(
 								"Connection requests to a database using equivalent "
 								+ "relative/absolute/canonical paths should return the same connection object",
