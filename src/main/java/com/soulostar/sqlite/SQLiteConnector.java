@@ -166,7 +166,7 @@ public class SQLiteConnector {
 			if (dbFile.exists()) {
 				return getConnectionFromMap(canonicalPath);
 			} else if (createIfDoesNotExist) {
-				SQLiteConnection conn = new SQLiteConnection(dbPath);
+				SQLiteConnection conn = new SQLiteConnection(dbPath, false);
 				// Canonical path may be different between existing and
 				// non-existing files, so we resolve canonical path again
 				// here before putting connection into map.
@@ -283,11 +283,12 @@ public class SQLiteConnector {
 	 * @return a connection to the database.
 	 * @throws SQLException
 	 *             if a database access error occurs
+	 * @throws IOException if an I/O error occurs
 	 */
-	private SQLiteConnection getConnectionFromMap(String dbPath) throws SQLException {
+	private SQLiteConnection getConnectionFromMap(String dbPath) throws SQLException, IOException {
 		SQLiteConnection existingConn = connectionMap.get(dbPath);
 		if (existingConn == null || existingConn.isClosed()) {
-			SQLiteConnection conn = new SQLiteConnection(dbPath);
+			SQLiteConnection conn = new SQLiteConnection(dbPath, true);
 			connectionMap.put(dbPath, conn);
 			return conn;
 		} else {
@@ -322,23 +323,28 @@ public class SQLiteConnector {
 		 * by the given subname, typically a file path. In-memory databases may
 		 * also be supported depending on the driver being used.
 		 * 
-		 * @param canonicalPath
+		 * @param dbPath
 		 *            - the path of the database
+		 * @param canonical
+		 *            - true if <code>dbPath</code> is already a canonical path;
+		 *            false otherwise
 		 * @throws SQLException
 		 *             if a database access error occurs
+		 * @throws IOException
+		 *             if an I/O error occurs
 		 */
-		private SQLiteConnection(String canonicalPath) throws SQLException
-		{
-			this.canonicalPath = canonicalPath;
-			
-			String url = connectionStringPrefix + canonicalPath;
+		private SQLiteConnection(String dbPath, boolean canonical) throws SQLException, IOException
+		{			
+			String url = connectionStringPrefix + dbPath;
 			if (properties != null) {
 				conn = DriverManager.getConnection(url, properties);
 			} else if (user != null && password != null) {
 				conn = DriverManager.getConnection(url, user, password);
 			} else {
-				conn = DriverManager.getConnection(url);				
+				conn = DriverManager.getConnection(url);		
 			}
+			
+			canonicalPath = canonical ? dbPath : new File(dbPath).getCanonicalPath();
 			
 			if (logger != null) logger.trace("New {} created.", this);
 		}
