@@ -78,32 +78,29 @@ public class SQLiteConnectorTest {
 		// the TemporaryFolder, because we have to test relative paths in addition
 		// to absolute/canonical paths.
 		Path tmpDir = Paths.get("tmp");
-		Files.createDirectory(tmpDir);
-		
-		String relative = "tmp" + File.separator + "test.db";
-		String relative1 = "tmp" + File.separator + ".." + File.separator
-				+ "tmp" + File.separator + "test.db";
-		String absolute = new File("tmp").getAbsolutePath() + File.separator
-				+ ".." + File.separator + "tmp" + File.separator
-				+ "test.db";
-		String canonical = new File("tmp").getAbsolutePath() + File.separator + "test.db";
-		
-		try (Connection conn = connector.getConnection(relative)) {
-			try (Connection conn1 = connector.getConnection(relative1)) {
-				try (Connection conn2 = connector.getConnection(absolute)) {
-					try (Connection conn3 = connector.getConnection(canonical)) {
-						assertTrue(
-								"Connection requests to a database using equivalent "
-								+ "relative/absolute/canonical paths should return the same connection object",
-								conn == conn1 && conn1 == conn2 && conn2 == conn3);
+		Path relative = Paths.get("tmp", "test.db");
+		Path relative1 = Paths.get("tmp", "..", "tmp", "test.db");
+		Path absolute = Paths.get("tmp", "..", "tmp", "test.db").toAbsolutePath();
+		Path canonical = Paths.get("tmp", "test.db").toAbsolutePath();
+		try {
+			Files.createDirectory(tmpDir);
+			try (Connection conn = connector.getConnection(relative.toString())) {
+				try (Connection conn1 = connector.getConnection(relative1.toString())) {
+					try (Connection conn2 = connector.getConnection(absolute.toString())) {
+						try (Connection conn3 = connector.getConnection(canonical.toString())) {
+							assertTrue(
+									"Connection requests to a database using equivalent "
+											+ "relative/absolute/canonical paths should return the same connection object",
+									conn == conn1 && conn1 == conn2 && conn2 == conn3);
+						}
 					}
 				}
 			}
 		} finally {
-			Files.deleteIfExists(Paths.get(relative));
-			Files.deleteIfExists(Paths.get(relative1));
-			Files.deleteIfExists(Paths.get(absolute));
-			Files.deleteIfExists(Paths.get(canonical));
+			Files.deleteIfExists(relative);
+			Files.deleteIfExists(relative1);
+			Files.deleteIfExists(absolute);
+			Files.deleteIfExists(canonical);
 			Files.deleteIfExists(tmpDir);
 		}
 	}
