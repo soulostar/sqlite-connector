@@ -90,7 +90,8 @@ public class SQLiteConnectorTest {
 						try (Connection conn3 = connector.getConnection(canonical.toString())) {
 							assertTrue(
 									"Connection requests to a database using equivalent "
-											+ "relative/absolute/canonical paths should return the same connection object",
+											+ "relative/absolute/canonical paths should "
+											+ "return the same connection object",
 									conn == conn1 && conn1 == conn2 && conn2 == conn3);
 						}
 					}
