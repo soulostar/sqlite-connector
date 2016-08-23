@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 import org.junit.After;
@@ -20,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.sqlite.SQLiteConfig;
 
 public class SQLiteConnectorTest {
 	
@@ -141,6 +143,27 @@ public class SQLiteConnectorTest {
 		SQLiteConnector connector = buildDefaultConnector();
 		
 		assertFalse("Logging should not occur by default.", connectorDoesLog(connector));
+	}
+	
+	@Test
+	public void getConnection_usesPropertiesWhenConfigured() throws SQLException, IOException {
+		SQLiteConfig config = new SQLiteConfig();
+		config.enforceForeignKeys(true);
+		SQLiteConnector connector = SQLiteConnectorBuilder
+				.newBuilder()
+				.withConnectionProperties(config.toProperties())
+				.build();
+		
+		try (Connection conn = connector.getConnection(getTempDbPath())) {
+			try (Statement statement = conn.createStatement()) {
+				statement.executeUpdate("CREATE TABLE fk_source (FKID INT PRIMARY KEY)");
+				statement.executeUpdate("INSERT INTO fk_source VALUES(1)");
+				statement.executeUpdate("CREATE TABLE fk_user (PKID INT PRIMARY KEY REFERENCES fk_source(FKID))");
+				statement.executeUpdate("INSERT INTO fk_user VALUES(1)");
+				thrown.expectMessage("foreign key constraint failed");
+				statement.executeUpdate("DELETE FROM fk_source");
+			}
+		}
 	}
 
 	/**
