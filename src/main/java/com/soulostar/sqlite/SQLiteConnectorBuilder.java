@@ -17,7 +17,7 @@ public class SQLiteConnectorBuilder {
 	private float loadFactor = 0.75f;
 	private int concurrencyLevel = 16;
 	boolean canCreateDatabases = true;
-	boolean logging = false;
+	Class<?> loggerClass;
 	
 	// prevent instantiation
 	private SQLiteConnectorBuilder() {
@@ -228,10 +228,11 @@ public class SQLiteConnectorBuilder {
 	 * Note that the connector uses SLF4J to log, so an SLF4J binding is required
 	 * to see the log output.
 	 * 
+	 * @param clazz - the class to name the logger after
 	 * @return this object, for chaining calls.
 	 */
-	public SQLiteConnectorBuilder withLogging() {
-		logging = true;
+	public SQLiteConnectorBuilder withLogging(Class<?> clazz) {
+		loggerClass = clazz;
 		return this;
 	}
 	
@@ -252,7 +253,7 @@ public class SQLiteConnectorBuilder {
 			loadFactor,
 			concurrencyLevel,
 			canCreateDatabases,
-			logging
+			loggerClass
 		);
 	}
 	

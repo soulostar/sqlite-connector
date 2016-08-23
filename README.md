@@ -12,6 +12,10 @@ and:
 
 Keep in mind that this library is written for use with SQLite's serialized mode. For more information on SQLite threading modes, see: https://www.sqlite.org/threadsafe.html
 
+## Requirements
+
+JDK 1.7+
+
 ## Usage
 
 ### What this library does

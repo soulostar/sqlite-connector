@@ -134,7 +134,7 @@ public class SQLiteConnectorBuilderTest {
 
 	@Test
 	public void withLogging_buildsCorrectly() {
-		SQLiteConnector connector = builder.withLogging().build();
+		SQLiteConnector connector = builder.withLogging(SQLiteConnectorBuilderTest.class).build();
 		assertTrue("Connector logger should not be null if builder enabled logging", connector.logger != null);
 	}
 

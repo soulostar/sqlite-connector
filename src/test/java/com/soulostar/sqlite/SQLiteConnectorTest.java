@@ -1,6 +1,7 @@
 package com.soulostar.sqlite;
 
 import static com.soulostar.sqlite.SQLiteConnector.IN_MEMORY_SUBNAME;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -39,14 +41,14 @@ public class SQLiteConnectorTest {
 
 	@Test
 	public void getConnection_sameConnectionForInMemoryDatabase() throws SQLException, IOException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
+		SQLiteConnector connector = buildDefaultConnector();
 		
 		try (Connection conn = connector.getConnection(IN_MEMORY_SUBNAME)) {
 			try (Connection conn1 = connector.getConnection(IN_MEMORY_SUBNAME)) {
 				try (Connection conn2 = connector.getConnection(IN_MEMORY_SUBNAME)) {
 					assertTrue(
 							"Multiple requests for in-memory database connection "
-							+ "should return the same connection object",
+									+ "should return the same connection object",
 							conn == conn1 && conn1 == conn2);
 				}
 			}
@@ -55,15 +57,15 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForSameFile() throws SQLException, IOException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
+		SQLiteConnector connector = buildDefaultConnector();
 		
 		String tempDbPath = getTempDbPath();
 		try (Connection conn = connector.getConnection(tempDbPath)) {
 			try (Connection conn1 = connector.getConnection(tempDbPath)) {
 				try (Connection conn2 = connector.getConnection(tempDbPath)) {
 					assertTrue(
-							"Multiple requests for a connection to the same database " +
-							"file should return the same connection object",
+							"Multiple requests for a connection to the same database "
+									+ "file should return the same connection object",
 							conn == conn1 && conn1 == conn2);
 				}
 			}	
@@ -72,7 +74,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForEquivalentPaths() throws IOException, SQLException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
+		SQLiteConnector connector = buildDefaultConnector();
 		
 		// This test has to operate on a special temp directory other than
 		// the TemporaryFolder, because we have to test relative paths in addition
@@ -107,8 +109,8 @@ public class SQLiteConnectorTest {
 	}
 	
 	@Test
-	public void getConnection_createsDatabaseWhenCreateOn() throws SQLException, IOException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
+	public void getConnection_createsDatabaseByDefault() throws SQLException, IOException {
+		SQLiteConnector connector = buildDefaultConnector();
 
 		Path db = Paths.get(getTempDbPath());
 		assertTrue("Test database should not exist before getting connection", Files.notExists(db));	
@@ -118,7 +120,7 @@ public class SQLiteConnectorTest {
 	}
 	
 	@Test
-	public void getConnection_throwsWhenCreateOff() throws SQLException, IOException {
+	public void getConnection_throwsWhenCreateIsOff() throws SQLException, IOException {
 		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().cannotCreateDatabases().build();
 
 		thrown.expect(FileNotFoundException.class);
@@ -126,8 +128,67 @@ public class SQLiteConnectorTest {
 		}
 	}
 	
+	@Test
+	public void getConnection_logsWhenLoggingIsOn() throws SQLException, IOException {
+		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().withLogging(SQLiteConnectorTest.class).build();
+		
+		assertTrue("Logging should occur when connector is configured to log.", connectorDoesLog(connector));
+	}
+	
+	@Test
+	public void getConnection_doesNotLogByDefault() throws SQLException, IOException {
+		SQLiteConnector connector = buildDefaultConnector();
+		
+		assertFalse("Logging should not occur by default.", connectorDoesLog(connector));
+	}
+
+	/**
+	 * Builds and returns a default <code>SQLiteConnector</code>.
+	 * 
+	 * @return a default <code>SQLiteConnector</code>.
+	 */
+	private SQLiteConnector buildDefaultConnector() {
+		return SQLiteConnectorBuilder.newBuilder().build();
+	}
+	
+	/**
+	 * Gets the path of the main test database, located in this class's
+	 * <code>TemporaryFolder</code>.
+	 * 
+	 * @return the path of the main test database.
+	 */
 	private String getTempDbPath() {
 		return folder.getRoot().getAbsolutePath() + File.separator + "Test.db";
+	}
+
+	/**
+	 * Checks if logging occurs when getting connections via a number of
+	 * different methods with the given connector.
+	 * 
+	 * @param connector
+	 *            - the connector to test
+	 * @return true if logging occurred; false if not.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	private boolean connectorDoesLog(SQLiteConnector connector) throws SQLException, IOException {
+		SQLiteConnectorTestSuite.bytesOut.reset();
+		
+		// Get connections in a bunch of different ways, and then check
+		// if System.err has written anything (the slf4j-simple binding logs to
+		// System.err).
+		try (Connection conn = connector.getConnection(getTempDbPath())) {
+			try (Connection innerConn = connector.getConnection(getTempDbPath(), false)) {	
+			}	
+			try (Connection innerConn = connector.getUnsharedConnection(getTempDbPath())) {
+			}
+		}
+		try (Connection con = connector.getUnsharedConnection(getTempDbPath(), new Properties())) {
+		}
+
+		return SQLiteConnectorTestSuite.bytesOut.toByteArray().length > 0;
 	}
 
 }

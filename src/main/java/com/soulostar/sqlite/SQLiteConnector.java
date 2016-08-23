@@ -79,7 +79,7 @@ public class SQLiteConnector {
 		float loadFactor,
 		int concurrencyLevel,
 		boolean canCreateDatabases,
-		boolean logging
+		Class<?> clazz
 	) {
 		connectionStringPrefix = "jdbc:" + subprotocol + ":";
 		this.properties = properties;
@@ -88,7 +88,7 @@ public class SQLiteConnector {
 		locks = Striped.lock(lockStripes);
 		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
 		this.canCreateDatabases = canCreateDatabases;
-		logger = logging ? LoggerFactory.getLogger(SQLiteConnector.class) : null;
+		logger = clazz == null ? null : LoggerFactory.getLogger(clazz);
 	}
 	
 	/**
