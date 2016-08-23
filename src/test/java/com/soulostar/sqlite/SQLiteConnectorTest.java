@@ -32,6 +32,7 @@ public class SQLiteConnectorTest {
 	@BeforeClass
 	public static void beforeClass() throws ClassNotFoundException, IOException {
 		Class.forName("org.sqlite.JDBC");
+		RedirectedStderr.init();
 	}
 	
 	@After
@@ -174,7 +175,7 @@ public class SQLiteConnectorTest {
 	 *             if an I/O error occurs
 	 */
 	private boolean connectorDoesLog(SQLiteConnector connector) throws SQLException, IOException {
-		SQLiteConnectorTestSuite.bytesOut.reset();
+		RedirectedStderr.bytesOut.reset();
 		
 		// Get connections in a bunch of different ways, and then check
 		// if System.err has written anything (the slf4j-simple binding logs to
@@ -188,7 +189,7 @@ public class SQLiteConnectorTest {
 		try (Connection con = connector.getUnsharedConnection(getTempDbPath(), new Properties())) {
 		}
 
-		return SQLiteConnectorTestSuite.bytesOut.toByteArray().length > 0;
+		return RedirectedStderr.bytesOut.toByteArray().length > 0;
 	}
 
 }

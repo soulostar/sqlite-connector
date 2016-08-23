@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import java.util.Properties;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,6 +20,11 @@ public class SQLiteConnectorBuilderTest {
 	public ExpectedException thrown = ExpectedException.none();
 	
 	private SQLiteConnectorBuilder builder;
+	
+	@BeforeClass
+	public static void beforeClass() {
+		RedirectedStderr.init();
+	}
 	
 	@Before
 	public void createBuilder() {

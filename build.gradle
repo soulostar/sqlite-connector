@@ -32,9 +32,3 @@ dependencies {
     testCompile 'org.xerial:sqlite-jdbc:3.7.2'
     testCompile 'org.slf4j:slf4j-simple:1.7.21'
 }
-
-test {
-	filter {
-		includeTestsMatching "com.soulostar.sqlite.SQLiteConnectorTestSuite"
-	}
-}
