@@ -396,13 +396,14 @@ public class SQLiteConnector {
 			lock.lock();
 			try {
 				numUsers--;
-				if (logger != null) logger.trace("{} user count decremented to {}.", this, numUsers);
 				if (numUsers == 0) {
 					conn.close();
 					if (logger != null) logger.trace("{} underlying Connection closed.", this);
+				} else {					
+					if (logger != null) logger.trace("{} user count decremented to {}.", this, numUsers);
 				}
 			} catch (Exception ex) {				
-				if (logger != null) logger.warn(ex.getMessage());
+				if (logger != null) logger.warn("Error closing connection: {}", ex.getMessage());
 			} finally {
 				lock.unlock();
 			}
