@@ -30,5 +30,5 @@ dependencies {
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
     testCompile 'org.xerial:sqlite-jdbc:3.7.2'
-    testCompile 'org.slf4j:slf4j-simple:1.7.21'
+    testRuntime 'org.slf4j:slf4j-simple:1.7.21'
 }
