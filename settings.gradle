@@ -16,4 +16,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'SQLiteConnector'
+rootProject.name = 'sqlite-connector'
