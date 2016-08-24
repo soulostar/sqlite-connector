@@ -12,6 +12,10 @@ and:
 
 Keep in mind that this library is written for use with SQLite's serialized mode. For more information on SQLite threading modes, see: https://www.sqlite.org/threadsafe.html
 
+## Download
+
+The jar can be downloaded from the releases page. Ideally, this project will be available in a central repository sometime soon for use with Gradle, Maven, etc.
+
 ## Requirements
 
 JDK 1.7+
@@ -83,7 +87,7 @@ Class.forName("org.sqlite.JDBC");
 at some point in your code first, before using this connector.
 
 ## Todo
-- Write tests
+- ~~Write tests~~ (Done)
 - Add support for associating different user/password credentials with different databases,
 instead of using the same credentials for all shared connections.
 - Expire old entries in the connection map so it cannot grow unbounded; may convert the map to a cache
