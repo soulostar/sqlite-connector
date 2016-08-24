@@ -43,6 +43,8 @@ public class SQLiteConnectorTest {
 	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
+	
+	private SQLiteConnector connector;
 
 	@BeforeClass
 	public static void beforeClass() throws ClassNotFoundException, IOException {
@@ -57,7 +59,7 @@ public class SQLiteConnectorTest {
 
 	@Test
 	public void getConnection_sameConnectionForInMemoryDatabase() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		try (Connection conn = connector.getConnection(IN_MEMORY_SUBNAME)) {
 			try (Connection conn1 = connector.getConnection(IN_MEMORY_SUBNAME)) {
@@ -73,7 +75,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForSameFile() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		String tempDbPath = getTempDbPath();
 		try (Connection conn = connector.getConnection(tempDbPath)) {
@@ -90,7 +92,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForEquivalentPaths() throws IOException, SQLException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		// This test has to operate on a special temp directory other than
 		// the TemporaryFolder, because we have to test relative paths in addition
@@ -126,14 +128,14 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForMultipleConcurrentThreads() throws InterruptedException, SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		AtomicInteger identicalConnections = new AtomicInteger();
 		ExecutorService executor = Executors.newCachedThreadPool();
 		int threadTestCount = 100;
 		try (Connection conn = connector.getConnection(getTempDbPath())) {
 			for (int i = 0; i < threadTestCount; i++) {
-				executor.execute(new IdenticalConnectionTest(connector, identicalConnections, conn));				
+				executor.execute(new IdenticalConnectionTest(identicalConnections, conn));				
 			}
 			executor.shutdown();
 			executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -144,13 +146,10 @@ public class SQLiteConnectorTest {
 	
 	private class IdenticalConnectionTest implements Runnable {
 		
-		private final SQLiteConnector connector;
 		private final AtomicInteger identicalConnectionCounter;
 		private final Connection connToCompare;
 		
-		private IdenticalConnectionTest(SQLiteConnector connector, AtomicInteger identicalConnectionCounter,
-				Connection connToCompare) {
-			this.connector = connector;
+		private IdenticalConnectionTest(AtomicInteger identicalConnectionCounter, Connection connToCompare) {
 			this.identicalConnectionCounter = identicalConnectionCounter;
 			this.connToCompare = connToCompare;
 		}
@@ -171,7 +170,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_differentConnectionForDifferentFiles() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		try (Connection conn = connector.getConnection(getTempDbPath())) {
 			String otherTempDbPath = getTempFilePath("Test1.db");
@@ -185,7 +184,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_differentConnectionForSequentialRequests() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
 		int requestCount = 100;
 		Set<Connection> openedConnections = new HashSet<>();
@@ -206,7 +205,7 @@ public class SQLiteConnectorTest {
 	// if not all, systems. If this is found not to be the case, changes will be considered.
 	@Test
 	public void getConnection_sharedConnectionsShouldBeFasterThanUnshared() throws Exception {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 
 		// setup
 		ExecutorService executor = Executors.newCachedThreadPool();
@@ -222,7 +221,7 @@ public class SQLiteConnectorTest {
 		// test shared connections
 		for (int i = 0; i < loopCount; i++) {
 			for (String id : testIds) {
-				tasks.add(i % 2 == 0 ? new ConcurrentInsert(connector, id, true) : new ConcurrentRead(connector, true));
+				tasks.add(i % 2 == 0 ? new ConcurrentInsert(id, true) : new ConcurrentRead(true));
 			}
 		}
 		long start = System.currentTimeMillis();
@@ -241,7 +240,7 @@ public class SQLiteConnectorTest {
 		tasks.clear();
 		for (int i = 0; i < loopCount; i++) {
 			for (String id : testIds) {
-				tasks.add(i % 2 == 0 ? new ConcurrentInsert(connector, id, false) : new ConcurrentRead(connector, true));
+				tasks.add(i % 2 == 0 ? new ConcurrentInsert(id, false) : new ConcurrentRead(true));
 			}
 		}
 		start = System.currentTimeMillis();
@@ -273,14 +272,12 @@ public class SQLiteConnectorTest {
 	
 	private class ConcurrentInsert implements Callable<Void> {
 
-		private final SQLiteConnector connector;
 		private final String value;
 		private final boolean shareConnection;
 		private final String tempDbPath;
 		private final String unsharedUrl;
 		
-		private ConcurrentInsert(SQLiteConnector connector, String value, boolean shareConnection) {
-			this.connector = connector;
+		private ConcurrentInsert(String value, boolean shareConnection) {
 			this.value = value;
 			this.shareConnection = shareConnection;
 			this.tempDbPath = getTempDbPath();
@@ -303,13 +300,11 @@ public class SQLiteConnectorTest {
 	
 	private class ConcurrentRead implements Callable<Void> {
 		
-		private final SQLiteConnector connector;
 		private final boolean shareConnection;
 		private final String tempDbPath;
 		private final String unsharedUrl;
 		
-		private ConcurrentRead(SQLiteConnector connector, boolean shareConnection) {
-			this.connector = connector;
+		private ConcurrentRead(boolean shareConnection) {
 			this.shareConnection = shareConnection;
 			this.tempDbPath = getTempDbPath();
 			this.unsharedUrl = "jdbc:sqlite:" + tempDbPath;
@@ -330,7 +325,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_createsDatabaseByDefault() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 
 		Path db = Paths.get(getTempDbPath());
 		assertTrue("Test database should not exist before getting connection", Files.notExists(db));	
@@ -341,7 +336,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_throwsWhenCreateIsOff() throws SQLException, IOException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().cannotCreateDatabases().build();
+		connector = SQLiteConnectorBuilder.newBuilder().cannotCreateDatabases().build();
 
 		thrown.expect(FileNotFoundException.class);
 		try (Connection conn = connector.getConnection(getTempDbPath())) {
@@ -350,31 +345,29 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_logsWhenLoggingIsOn() throws SQLException, IOException {
-		SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().withLogging(SQLiteConnectorTest.class).build();
+		connector = SQLiteConnectorBuilder.newBuilder().withLogging(SQLiteConnectorTest.class).build();
 		
-		assertTrue("Logging should occur when connector is configured to log.", connectorDoesLog(connector));
+		assertTrue("Logging should occur when connector is configured to log.", connectorDoesLog());
 	}
 	
 	@Test
 	public void getConnection_doesNotLogByDefault() throws SQLException, IOException {
-		SQLiteConnector connector = buildDefaultConnector();
+		connector = buildDefaultConnector();
 		
-		assertFalse("Logging should not occur by default.", connectorDoesLog(connector));
+		assertFalse("Logging should not occur by default.", connectorDoesLog());
 	}
 	
 	/**
 	 * Checks if logging occurs when getting connections via a number of
 	 * different methods with the given connector.
 	 * 
-	 * @param connector
-	 *            - the connector to test
 	 * @return true if logging occurred; false if not.
 	 * @throws SQLException
 	 *             if a database access error occurs
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	private boolean connectorDoesLog(SQLiteConnector connector) throws SQLException, IOException {
+	private boolean connectorDoesLog() throws SQLException, IOException {
 		RedirectedStderr.bytesOut.reset();
 		
 		// Get connections in a bunch of different ways, and then check
@@ -396,7 +389,7 @@ public class SQLiteConnectorTest {
 	public void getConnection_usesPropertiesWhenConfigured() throws SQLException, IOException {
 		SQLiteConfig config = new SQLiteConfig();
 		config.enforceForeignKeys(true);
-		SQLiteConnector connector = SQLiteConnectorBuilder
+		connector = SQLiteConnectorBuilder
 				.newBuilder()
 				.withConnectionProperties(config.toProperties())
 				.build();
