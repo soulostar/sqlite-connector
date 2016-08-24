@@ -10,8 +10,9 @@
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
+description='A simple library to improve performance in SQLite\'s default serialized threading mode by sharing connections'
 group='com.soulostar'
-version='1.0.0'
+version='0.1.0'
 sourceCompatibility=1.7
 
 // In this section you declare where to find the dependencies of your project
@@ -25,14 +26,14 @@ repositories {
 dependencies {
     // The production code uses the SLF4J logging API at compile time
     compile 'com.google.code.findbugs:jsr305:3.0.0'
-    compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.google.guava:guava:19.0'
+    compile 'org.slf4j:slf4j-api:1.7.21'
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
-    testCompile 'org.xerial:sqlite-jdbc:3.7.2'
     testRuntime 'org.slf4j:slf4j-simple:1.7.21'
+    testCompile 'org.xerial:sqlite-jdbc:3.7.2'
 }
