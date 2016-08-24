@@ -141,7 +141,7 @@ public class SQLiteConnectorTest {
 		final AtomicInteger identicalConnectionCounter;
 		final Connection connToCompare;
 		
-		IdenticalConnectionTest(SQLiteConnector connector, AtomicInteger identicalConnectionCounter,
+		private IdenticalConnectionTest(SQLiteConnector connector, AtomicInteger identicalConnectionCounter,
 				Connection connToCompare) {
 			this.connector = connector;
 			this.identicalConnectionCounter = identicalConnectionCounter;
