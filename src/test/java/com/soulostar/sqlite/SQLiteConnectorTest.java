@@ -13,7 +13,13 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -112,6 +118,79 @@ public class SQLiteConnectorTest {
 	}
 	
 	@Test
+	public void getConnection_sameConnectionForMultipleConcurrentThreads() throws InterruptedException, SQLException, IOException {
+		SQLiteConnector connector = buildDefaultConnector();
+		
+		AtomicInteger identicalConnections = new AtomicInteger();
+		ExecutorService executor = Executors.newCachedThreadPool();
+		int threadTestCount = 100;
+		try (Connection conn = connector.getConnection(getTempDbPath())) {
+			for (int i = 0; i < threadTestCount; i++) {
+				executor.execute(new IdenticalConnectionTest(connector, identicalConnections, conn));				
+			}
+			executor.shutdown();
+			executor.awaitTermination(10, TimeUnit.SECONDS);
+		}
+		assertTrue("", identicalConnections.get() == threadTestCount);
+	}
+	
+	private class IdenticalConnectionTest implements Runnable {
+		
+		final SQLiteConnector connector;
+		final AtomicInteger identicalConnectionCounter;
+		final Connection connToCompare;
+		
+		IdenticalConnectionTest(SQLiteConnector connector, AtomicInteger identicalConnectionCounter,
+				Connection connToCompare) {
+			this.connector = connector;
+			this.identicalConnectionCounter = identicalConnectionCounter;
+			this.connToCompare = connToCompare;
+		}
+
+		@Override
+		public void run() {
+			try (Connection conn = connector.getConnection(getTempDbPath())) {
+				// Sleep for a short random time to encourage more concurrent connection requests
+				Thread.sleep((long)(Math.random() * 1000));
+				if (conn == connToCompare) {
+					identicalConnectionCounter.incrementAndGet();
+				}
+			} catch (@SuppressWarnings("unused") SQLException | IOException | InterruptedException ex) {
+			}
+		}
+		
+	}
+	
+	@Test
+	public void getConnection_differentConnectionForDifferentFiles() throws SQLException, IOException {
+		SQLiteConnector connector = buildDefaultConnector();
+		
+		try (Connection conn = connector.getConnection(getTempDbPath())) {
+			String otherTempDbPath = getTempFilePath("Test1.db");
+			try (Connection conn1 = connector.getConnection(otherTempDbPath)) {
+				assertFalse("Connections to different databases should not be identical", conn == conn1);
+			} finally {
+				Files.deleteIfExists(Paths.get(otherTempDbPath));
+			}
+		}
+	}
+	
+	@Test
+	public void getConnection_differentConnectionForSequentialRequests() throws SQLException, IOException {
+		SQLiteConnector connector = buildDefaultConnector();
+		
+		int requestCount = 100;
+		Set<Connection> openedConnections = new HashSet<>();
+		for (int i = 0; i < requestCount; i++) {
+			try (Connection conn = connector.getConnection(getTempDbPath())) {
+				openedConnections.add(conn);
+			}
+		}			
+		assertTrue("Sequential requests for a given database should return a new connection object each time",
+				openedConnections.size() == requestCount);
+	}
+	
+	@Test
 	public void getConnection_createsDatabaseByDefault() throws SQLException, IOException {
 		SQLiteConnector connector = buildDefaultConnector();
 
@@ -145,6 +224,36 @@ public class SQLiteConnectorTest {
 		assertFalse("Logging should not occur by default.", connectorDoesLog(connector));
 	}
 	
+	/**
+	 * Checks if logging occurs when getting connections via a number of
+	 * different methods with the given connector.
+	 * 
+	 * @param connector
+	 *            - the connector to test
+	 * @return true if logging occurred; false if not.
+	 * @throws SQLException
+	 *             if a database access error occurs
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	private boolean connectorDoesLog(SQLiteConnector connector) throws SQLException, IOException {
+		RedirectedStderr.bytesOut.reset();
+		
+		// Get connections in a bunch of different ways, and then check
+		// if System.err has written anything (the slf4j-simple binding logs to
+		// System.err).
+		try (Connection conn = connector.getConnection(getTempDbPath())) {
+			try (Connection innerConn = connector.getConnection(getTempDbPath(), false)) {	
+			}	
+			try (Connection innerConn = connector.getUnsharedConnection(getTempDbPath())) {
+			}
+		}
+		try (Connection con = connector.getUnsharedConnection(getTempDbPath(), new Properties())) {
+		}
+	
+		return RedirectedStderr.bytesOut.toByteArray().length > 0;
+	}
+
 	@Test
 	public void getConnection_usesPropertiesWhenConfigured() throws SQLException, IOException {
 		SQLiteConfig config = new SQLiteConfig();
@@ -177,42 +286,25 @@ public class SQLiteConnectorTest {
 	
 	/**
 	 * Gets the path of the main test database, located in this class's
-	 * <code>TemporaryFolder</code>.
+	 * <code>TemporaryFolder</code>. This test database is automatically cleaned up
+	 * after each test.
 	 * 
 	 * @return the path of the main test database.
 	 */
 	private String getTempDbPath() {
-		return folder.getRoot().getAbsolutePath() + File.separator + "Test.db";
+		return getTempFilePath("Test.db");
 	}
-
+	
 	/**
-	 * Checks if logging occurs when getting connections via a number of
-	 * different methods with the given connector.
+	 * Gets the path of a temporary file in this class's
+	 * <code>TemporaryFolder</code>.
 	 * 
-	 * @param connector
-	 *            - the connector to test
-	 * @return true if logging occurred; false if not.
-	 * @throws SQLException
-	 *             if a database access error occurs
-	 * @throws IOException
-	 *             if an I/O error occurs
+	 * @param filename
+	 *            - the name of the file
+	 * @return
 	 */
-	private boolean connectorDoesLog(SQLiteConnector connector) throws SQLException, IOException {
-		RedirectedStderr.bytesOut.reset();
-		
-		// Get connections in a bunch of different ways, and then check
-		// if System.err has written anything (the slf4j-simple binding logs to
-		// System.err).
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
-			try (Connection innerConn = connector.getConnection(getTempDbPath(), false)) {	
-			}	
-			try (Connection innerConn = connector.getUnsharedConnection(getTempDbPath())) {
-			}
-		}
-		try (Connection con = connector.getUnsharedConnection(getTempDbPath(), new Properties())) {
-		}
-
-		return RedirectedStderr.bytesOut.toByteArray().length > 0;
+	private String getTempFilePath(String filename) {
+		return folder.getRoot().getAbsolutePath() + File.separator + filename;
 	}
 
 }
