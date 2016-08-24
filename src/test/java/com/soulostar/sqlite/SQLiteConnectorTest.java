@@ -131,7 +131,8 @@ public class SQLiteConnectorTest {
 			executor.shutdown();
 			executor.awaitTermination(10, TimeUnit.SECONDS);
 		}
-		assertTrue("", identicalConnections.get() == threadTestCount);
+		assertTrue("Concurrent connections to the same database from different threads should return the same object",
+				identicalConnections.get() == threadTestCount);
 	}
 	
 	private class IdenticalConnectionTest implements Runnable {
