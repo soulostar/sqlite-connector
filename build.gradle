@@ -10,9 +10,10 @@
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
-description='A simple library to improve performance in SQLite\'s default serialized threading mode by sharing connections'
+description='A simple library for sharing connections in SQLite\'s default serialized threading mode'
 group='com.soulostar'
 version='0.1.0'
+sourceCompatibility=1.7
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -36,3 +37,21 @@ dependencies {
     testRuntime 'org.slf4j:slf4j-simple:1.7.21'
     testCompile 'org.xerial:sqlite-jdbc:3.7.2'
 }
+
+task fatJar(type: Jar) {
+	baseName = project.name + '-all'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+}
+
+
+task checkJavaVersion << {
+	def currentVersion = JavaVersion.current().toString()
+	def requiredVersion = sourceCompatibility.toString()
+	if (!currentVersion.equals(requiredVersion)) {
+		throw new GradleException("Gradle must be using the Java version specified by sourceCompatibility. "
+			+ "Expected: " + requiredVersion + ", Found: " + currentVersion)
+	}
+}
+
+compileJava.dependsOn checkJavaVersion
