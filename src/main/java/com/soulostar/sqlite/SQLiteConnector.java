@@ -35,12 +35,12 @@ import com.google.common.util.concurrent.Striped;
 
 
 /**
- * Connector for SQLite connections. This object maintains at most one
- * connection per file path. If multiple threads attempt to access the same
- * database file simultaneously, the same {@link SQLiteConnection} will be
- * returned to all of them. This performs better than returning separate
- * connections to each thread, and is safe to do in SQLite's default threading
- * mode (Serialized).
+ * A connector for SQLite connections. It maintains at most one connection per
+ * canonical file path. If multiple threads attempt to access the same database
+ * simultaneously, the same {@link SQLiteConnection} will be returned to all of
+ * them. This usually performs better than returning separate connections to
+ * each thread, avoids file locking exceptions, and is safe to do in SQLite's
+ * default threading mode (Serialized).
  * 
  * @author Sidney Tang
  */

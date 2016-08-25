@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,6 +46,8 @@ public class SQLiteConnectorTest {
 	public ExpectedException thrown = ExpectedException.none();
 	
 	private SQLiteConnector connector;
+	private SQLiteConnectorBuilder builder;
+	private String tempDbPath;
 
 	@BeforeClass
 	public static void beforeClass() throws ClassNotFoundException, IOException {
@@ -52,14 +55,20 @@ public class SQLiteConnectorTest {
 		RedirectedStderr.init();
 	}
 	
+	@Before
+	public void setTempDatabasePath() {
+		tempDbPath = folder.getRoot().getAbsolutePath() + File.separator + "Test.db";
+		builder = SQLiteConnectorBuilder.newBuilder();
+	}
+	
 	@After
 	public void deleteTestDatabase() throws IOException {
-		Files.deleteIfExists(Paths.get(getTempDbPath()));
+		Files.deleteIfExists(Paths.get(tempDbPath));
 	}
 
 	@Test
 	public void getConnection_sameConnectionForInMemoryDatabase() throws SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
 		try (Connection conn = connector.getConnection(IN_MEMORY_SUBNAME)) {
 			try (Connection conn1 = connector.getConnection(IN_MEMORY_SUBNAME)) {
@@ -75,9 +84,8 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForSameFile() throws SQLException, IOException {
-		connector = buildDefaultConnector();
-		
-		String tempDbPath = getTempDbPath();
+		connector = builder.build();
+
 		try (Connection conn = connector.getConnection(tempDbPath)) {
 			try (Connection conn1 = connector.getConnection(tempDbPath)) {
 				try (Connection conn2 = connector.getConnection(tempDbPath)) {
@@ -92,7 +100,7 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForEquivalentPaths() throws IOException, SQLException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
 		// This test has to operate on a special temp directory other than
 		// the TemporaryFolder, because we have to test relative paths in addition
@@ -128,12 +136,12 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_sameConnectionForMultipleConcurrentThreads() throws InterruptedException, SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
 		AtomicInteger identicalConnections = new AtomicInteger();
 		ExecutorService executor = Executors.newCachedThreadPool();
 		int threadTestCount = 100;
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 			for (int i = 0; i < threadTestCount; i++) {
 				executor.execute(new IdenticalConnectionTest(identicalConnections, conn));				
 			}
@@ -156,7 +164,7 @@ public class SQLiteConnectorTest {
 
 		@Override
 		public void run() {
-			try (Connection conn = connector.getConnection(getTempDbPath())) {
+			try (Connection conn = connector.getConnection(tempDbPath)) {
 				// Sleep for a short random time to encourage more concurrent connection requests
 				Thread.sleep((long)(Math.random() * 1000));
 				if (conn == connToCompare) {
@@ -170,10 +178,10 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_differentConnectionForDifferentFiles() throws SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
-			String otherTempDbPath = getTempFilePath("Test1.db");
+		try (Connection conn = connector.getConnection(tempDbPath)) {
+			String otherTempDbPath = folder.getRoot().getAbsolutePath() + File.separator + "Test1.db";
 			try (Connection conn1 = connector.getConnection(otherTempDbPath)) {
 				assertFalse("Connections to different databases should not be identical", conn == conn1);
 			} finally {
@@ -184,12 +192,12 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_differentConnectionForSequentialRequests() throws SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
 		int requestCount = 100;
 		Set<Connection> openedConnections = new HashSet<>();
 		for (int i = 0; i < requestCount; i++) {
-			try (Connection conn = connector.getConnection(getTempDbPath())) {
+			try (Connection conn = connector.getConnection(tempDbPath)) {
 				openedConnections.add(conn);
 			}
 		}			
@@ -205,14 +213,14 @@ public class SQLiteConnectorTest {
 	// if not all, systems. If this is found not to be the case, changes will be considered.
 	@Test
 	public void getConnection_sharedConnectionsShouldBeFasterThanUnshared() throws Exception {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 
 		// setup
 		ExecutorService executor = Executors.newCachedThreadPool();
 		String[] testIds = new String[] { "Stephen", "Klay", "Draymond", "Kevin", "Andre", "Shaun", "Zaza", "David" };
 		int loopCount = 10;
 		List<Callable<Void>> tasks = new ArrayList<>();
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 			try (Statement statement = conn.createStatement()) {
 				statement.executeUpdate("CREATE TABLE perf_test (id VARCHAR)");
 			}
@@ -230,7 +238,7 @@ public class SQLiteConnectorTest {
 		checkFuturesForException(futures);
 		
 		// reset table
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 			try (Statement statement = conn.createStatement()) {
 				statement.executeUpdate("DELETE FROM perf_test");
 			}
@@ -274,13 +282,11 @@ public class SQLiteConnectorTest {
 
 		private final String value;
 		private final boolean shareConnection;
-		private final String tempDbPath;
 		private final String unsharedUrl;
 		
 		private ConcurrentInsert(String value, boolean shareConnection) {
 			this.value = value;
 			this.shareConnection = shareConnection;
-			this.tempDbPath = getTempDbPath();
 			this.unsharedUrl = "jdbc:sqlite:" + tempDbPath;
 		}
 		
@@ -301,12 +307,10 @@ public class SQLiteConnectorTest {
 	private class ConcurrentRead implements Callable<Void> {
 		
 		private final boolean shareConnection;
-		private final String tempDbPath;
 		private final String unsharedUrl;
 		
 		private ConcurrentRead(boolean shareConnection) {
 			this.shareConnection = shareConnection;
-			this.tempDbPath = getTempDbPath();
 			this.unsharedUrl = "jdbc:sqlite:" + tempDbPath;
 		}
 
@@ -325,34 +329,34 @@ public class SQLiteConnectorTest {
 	
 	@Test
 	public void getConnection_createsDatabaseByDefault() throws SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 
-		Path db = Paths.get(getTempDbPath());
+		Path db = Paths.get(tempDbPath);
 		assertTrue("Test database should not exist before getting connection", Files.notExists(db));	
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 		}	
 		assertTrue("Test database should have been created by getting connection", Files.exists(db));
 	}
 	
 	@Test
 	public void getConnection_throwsWhenCreateIsOff() throws SQLException, IOException {
-		connector = SQLiteConnectorBuilder.newBuilder().cannotCreateDatabases().build();
+		connector = builder.cannotCreateDatabases().build();
 
 		thrown.expect(FileNotFoundException.class);
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 		}
 	}
 	
 	@Test
 	public void getConnection_logsWhenLoggingIsOn() throws SQLException, IOException {
-		connector = SQLiteConnectorBuilder.newBuilder().withLogging(SQLiteConnectorTest.class).build();
+		connector = builder.withLogging(SQLiteConnectorTest.class).build();
 		
 		assertTrue("Logging should occur when connector is configured to log.", connectorDoesLog());
 	}
 	
 	@Test
 	public void getConnection_doesNotLogByDefault() throws SQLException, IOException {
-		connector = buildDefaultConnector();
+		connector = builder.build();
 		
 		assertFalse("Logging should not occur by default.", connectorDoesLog());
 	}
@@ -373,13 +377,13 @@ public class SQLiteConnectorTest {
 		// Get connections in a bunch of different ways, and then check
 		// if System.err has written anything (the slf4j-simple binding logs to
 		// System.err).
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
-			try (Connection innerConn = connector.getConnection(getTempDbPath(), false)) {	
+		try (Connection conn = connector.getConnection(tempDbPath)) {
+			try (Connection innerConn = connector.getConnection(tempDbPath, false)) {	
 			}	
-			try (Connection innerConn = connector.getUnsharedConnection(getTempDbPath())) {
+			try (Connection innerConn = connector.getUnsharedConnection(tempDbPath)) {
 			}
 		}
-		try (Connection con = connector.getUnsharedConnection(getTempDbPath(), new Properties())) {
+		try (Connection con = connector.getUnsharedConnection(tempDbPath, new Properties())) {
 		}
 	
 		return RedirectedStderr.bytesOut.toByteArray().length > 0;
@@ -394,7 +398,7 @@ public class SQLiteConnectorTest {
 				.withConnectionProperties(config.toProperties())
 				.build();
 		
-		try (Connection conn = connector.getConnection(getTempDbPath())) {
+		try (Connection conn = connector.getConnection(tempDbPath)) {
 			try (Statement statement = conn.createStatement()) {
 				statement.executeUpdate("CREATE TABLE fk_source (FKID INT PRIMARY KEY)");
 				statement.executeUpdate("INSERT INTO fk_source VALUES(1)");
@@ -404,38 +408,6 @@ public class SQLiteConnectorTest {
 				statement.executeUpdate("DELETE FROM fk_source");
 			}
 		}
-	}
-
-	/**
-	 * Builds and returns a default <code>SQLiteConnector</code>.
-	 * 
-	 * @return a default <code>SQLiteConnector</code>.
-	 */
-	private SQLiteConnector buildDefaultConnector() {
-		return SQLiteConnectorBuilder.newBuilder().build();
-	}
-	
-	/**
-	 * Gets the path of the main test database, located in this class's
-	 * <code>TemporaryFolder</code>. This test database is automatically cleaned up
-	 * after each test.
-	 * 
-	 * @return the path of the main test database.
-	 */
-	private String getTempDbPath() {
-		return getTempFilePath("Test.db");
-	}
-	
-	/**
-	 * Gets the path of a temporary file in this class's
-	 * <code>TemporaryFolder</code>.
-	 * 
-	 * @param filename
-	 *            - the name of the file
-	 * @return
-	 */
-	private String getTempFilePath(String filename) {
-		return folder.getRoot().getAbsolutePath() + File.separator + filename;
 	}
 
 }

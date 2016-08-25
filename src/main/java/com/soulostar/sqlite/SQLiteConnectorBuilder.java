@@ -6,6 +6,11 @@ import static com.soulostar.sqlite.Utils.checkString;
 import java.io.FileNotFoundException;
 import java.util.Properties;
 
+/**
+ * A builder for {@link SQLiteConnector} objects.
+ * @author stang
+ *
+ */
 public class SQLiteConnectorBuilder {
 	
 	String subprotocol = "sqlite";

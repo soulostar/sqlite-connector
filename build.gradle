@@ -13,7 +13,6 @@ apply plugin: 'java'
 description='A simple library to improve performance in SQLite\'s default serialized threading mode by sharing connections'
 group='com.soulostar'
 version='0.1.0'
-sourceCompatibility=1.7
 
 // In this section you declare where to find the dependencies of your project
 repositories {

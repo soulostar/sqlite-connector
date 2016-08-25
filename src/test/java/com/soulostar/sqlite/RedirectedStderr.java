@@ -14,6 +14,10 @@ public class RedirectedStderr {
 	static final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
 	
 	private static boolean redirected = false;
+	
+	private RedirectedStderr() {
+		// prevent instantiation
+	}
 
 	/**
 	 * Initializes any necessary system properties for slf4j-simple, and
