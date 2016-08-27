@@ -53,7 +53,7 @@ public class SQLiteConnectorBenchmark {
 		Files.delete(benchmarkDir);
 	}
 	
-	@State(Scope.Benchmark)
+	@State(Scope.Thread)
 	public static class ThreadState {
 		protected SQLiteConnector connector = SQLiteConnectorBuilder.newBuilder().build();
 		protected String dbPath = Paths.get(benchmarkDir.toString(), UUID.randomUUID().toString() + ".db").toString();
