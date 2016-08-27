@@ -11,20 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -203,128 +196,6 @@ public class SQLiteConnectorTest {
 		}			
 		assertTrue("Sequential requests for a given database should return a new connection object each time",
 				openedConnections.size() == requestCount);
-	}
-	
-	// This is kind of a performance/unit test hybrid. The reason I consider this a unit test is
-	// that the entire purpose of this library is to perform better than naively using unshared
-	// connections for concurrent database access. If it doesn't perform better, then there
-	// is no point for this library to exist.
-	// This SHOULD always pass, and shared connections should perform SUBSTANTIALLY better on most,
-	// if not all, systems. If this is found not to be the case, changes will be considered.
-	@Test
-	public void getConnection_sharedConnectionsShouldBeFasterThanUnshared() throws Exception {
-		connector = builder.build();
-
-		// setup
-		ExecutorService executor = Executors.newCachedThreadPool();
-		String[] testIds = new String[] { "Stephen", "Klay", "Draymond", "Kevin", "Andre", "Shaun", "Zaza", "David" };
-		int loopCount = 10;
-		List<Callable<Void>> tasks = new ArrayList<>();
-		try (Connection conn = connector.getConnection(tempDbPath)) {
-			try (Statement statement = conn.createStatement()) {
-				statement.executeUpdate("CREATE TABLE perf_test (id VARCHAR)");
-			}
-		}
-		
-		// test shared connections
-		for (int i = 0; i < loopCount; i++) {
-			for (String id : testIds) {
-				tasks.add(i % 2 == 0 ? new ConcurrentInsert(id, true) : new ConcurrentRead(true));
-			}
-		}
-		long start = System.currentTimeMillis();
-		List<Future<Void>> futures = executor.invokeAll(tasks);
-		long sharedTime = System.currentTimeMillis() - start;
-		checkFuturesForException(futures);
-		
-		// reset table
-		try (Connection conn = connector.getConnection(tempDbPath)) {
-			try (Statement statement = conn.createStatement()) {
-				statement.executeUpdate("DELETE FROM perf_test");
-			}
-		}
-
-		// test unshared connections
-		tasks.clear();
-		for (int i = 0; i < loopCount; i++) {
-			for (String id : testIds) {
-				tasks.add(i % 2 == 0 ? new ConcurrentInsert(id, false) : new ConcurrentRead(true));
-			}
-		}
-		start = System.currentTimeMillis();
-		futures = executor.invokeAll(tasks);
-		long unsharedTime = System.currentTimeMillis() - start;
-		checkFuturesForException(futures);
-		
-		System.out.println("shared: " + sharedTime + "ms");
-		System.out.println("unshared: " + unsharedTime + "ms");
-		assertTrue("Concurrent writes with shared connection should be faster than with unshared connections",
-				sharedTime < unsharedTime);
-	}
-	
-	/**
-	 * Checks a list of futures for exceptions by attempting to call {@link Future#get()} with each future.
-	 * <p>
-	 * This method is for detecting exceptions that were thrown in callables so the main test method can
-	 * fail appropriately if such an exception occurs.
-	 * @param results - a list of futures to check
-	 * @throws ExecutionException if a thread threw an exception
-	 * @throws InterruptedException if a thread was interrupted
-	 */
-	private void checkFuturesForException(List<Future<Void>> results)
-			throws InterruptedException, ExecutionException {
-		for (Future<Void> result : results) {
-			result.get();
-		}
-	}
-	
-	private class ConcurrentInsert implements Callable<Void> {
-
-		private final String value;
-		private final boolean shareConnection;
-		private final String unsharedUrl;
-		
-		private ConcurrentInsert(String value, boolean shareConnection) {
-			this.value = value;
-			this.shareConnection = shareConnection;
-			this.unsharedUrl = "jdbc:sqlite:" + tempDbPath;
-		}
-		
-		@Override
-		public Void call() throws SQLException, IOException {
-			try (Connection conn = shareConnection ? connector.getConnection(tempDbPath)
-												   : DriverManager.getConnection(unsharedUrl)) {
-				try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
-					insert.setString(1, value);
-					insert.executeUpdate();
-				}
-				return null;
-			}
-		}
-		
-	}
-	
-	private class ConcurrentRead implements Callable<Void> {
-		
-		private final boolean shareConnection;
-		private final String unsharedUrl;
-		
-		private ConcurrentRead(boolean shareConnection) {
-			this.shareConnection = shareConnection;
-			this.unsharedUrl = "jdbc:sqlite:" + tempDbPath;
-		}
-
-		@Override
-		public Void call() throws SQLException, IOException {
-			try (Connection conn = shareConnection ? connector.getConnection(tempDbPath)
-					   							   : DriverManager.getConnection(unsharedUrl)) {
-				try (PreparedStatement insert = conn.prepareStatement("SELECT * FROM perf_test")) {
-					insert.executeQuery();
-				}
-				return null;
-			}
-		}
-		
 	}
 	
 	@Test

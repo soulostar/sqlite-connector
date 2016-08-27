@@ -6,9 +6,23 @@
  * For more details take a look at the Java Quickstart chapter in the Gradle
  * user guide available at https://docs.gradle.org/2.14/userguide/tutorial_java_projects.html
  */
+ 
+buildscript {
+	repositories {
+		maven {
+			url 'https://plugins.gradle.org/m2/'
+		}
+	}
+	
+	dependencies {
+		classpath 'me.champeau.gradle:jmh-gradle-plugin:0.3.1'
+	}
+}
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'me.champeau.gradle.jmh'
 
 description='A simple library for sharing connections in SQLite\'s default serialized threading mode'
 group='com.soulostar'
@@ -55,3 +69,8 @@ task checkJavaVersion << {
 }
 
 compileJava.dependsOn checkJavaVersion
+
+// JMH configuration
+jmh {
+	threads = 1
+}
