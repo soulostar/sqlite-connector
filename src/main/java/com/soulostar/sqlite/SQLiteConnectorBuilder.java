@@ -178,7 +178,7 @@ public class SQLiteConnectorBuilder {
 	 * @return this object, for chaining calls.
 	 */
 	public SQLiteConnectorBuilder withConnectionCredentials(String user, String password) {
-		checkString(user, "User");
+		checkNotNull(user, "User");
 		checkNotNull(password, "Password");
 		
 		this.user = user;

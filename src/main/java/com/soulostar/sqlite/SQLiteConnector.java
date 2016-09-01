@@ -1,6 +1,5 @@
 package com.soulostar.sqlite;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.soulostar.sqlite.Utils.checkString;
 
 import java.io.File;
@@ -228,7 +227,6 @@ public class SQLiteConnector {
 	 */
 	public Connection getUnsharedConnection(String dbPath, Properties info) throws SQLException {
 		checkString(dbPath, "Database path");
-		checkNotNull(info, "Properties argument is null.");
 		
 		return DriverManager.getConnection(connectionStringPrefix + dbPath, info);
 	}
@@ -261,8 +259,6 @@ public class SQLiteConnector {
 	 */
 	public Connection getUnsharedConnection(String dbPath, String user, String password) throws SQLException {
 		checkString(dbPath, "Database path");
-		checkString(user, "User");
-		checkNotNull(password, "Password");
 		
 		return DriverManager.getConnection(connectionStringPrefix + dbPath, user, password);
 	}

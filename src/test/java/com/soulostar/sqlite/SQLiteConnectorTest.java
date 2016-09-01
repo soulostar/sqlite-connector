@@ -256,6 +256,8 @@ public class SQLiteConnectorTest {
 		}
 		try (Connection con = connector.getUnsharedConnection(tempDbPath, new Properties())) {
 		}
+		
+		System.out.println(new String(RedirectedStderr.bytesOut.toByteArray()));
 	
 		return RedirectedStderr.bytesOut.toByteArray().length > 0;
 	}
@@ -275,7 +277,7 @@ public class SQLiteConnectorTest {
 				statement.executeUpdate("INSERT INTO fk_source VALUES(1)");
 				statement.executeUpdate("CREATE TABLE fk_user (PKID INT PRIMARY KEY REFERENCES fk_source(FKID))");
 				statement.executeUpdate("INSERT INTO fk_user VALUES(1)");
-				thrown.expectMessage("foreign key constraint failed");
+				thrown.expectMessage("constraint");
 				statement.executeUpdate("DELETE FROM fk_source");
 			}
 		}

@@ -97,12 +97,6 @@ public class SQLiteConnectorBuilderTest {
 	}
 	
 	@Test
-	public void withConnectionCredentials_emptyUserThrows() {
-		thrown.expect(IllegalArgumentException.class);
-		builder.withConnectionCredentials("", "testpass99");
-	}
-	
-	@Test
 	public void withConnectionCredentials_nullPasswordThrows() {
 		thrown.expect(NullPointerException.class);
 		builder.withConnectionCredentials("usertest@", null);
