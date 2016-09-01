@@ -1,6 +1,7 @@
 package com.soulostar.sqlite;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -54,6 +56,13 @@ public class SQLiteConnectorBenchmark {
 		Class.forName("org.sqlite.JDBC");
 		Files.createDirectories(benchmarkDir);
 		
+		try (DirectoryStream<Path> file = Files.newDirectoryStream(benchmarkDir)) {
+			Iterator<Path> iterator = file.iterator();
+			while (iterator.hasNext()) {
+				Files.delete(iterator.next());
+			}
+		}
+		
 		try (Connection conn = connector.getConnection(dbPath)) {
 			try (Statement statement = conn.createStatement()) {
 				statement.executeUpdate("CREATE TABLE perf_test (id VARCHAR)");
@@ -76,56 +85,41 @@ public class SQLiteConnectorBenchmark {
 	}
 	
 	@Benchmark
-	@Group("concurrentShared")
-	@GroupThreads(READ_THREADS)
-	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
-	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
-	@BenchmarkMode(Mode.SingleShotTime)
-	public boolean sharedRead() throws SQLException, IOException {
-		try (Connection conn = connector.getConnection(dbPath)) {
-			try (PreparedStatement insert = conn.prepareStatement("SELECT * FROM perf_test WHERE id = ? LIMIT 1")) {
-				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
-				try (ResultSet rs =	insert.executeQuery()) {
-					return rs.next();
-				}
-			}
+	@Group("defaultGet")
+	public boolean defaultGet() throws SQLException {
+		try (Connection conn = DriverManager.getConnection(url)) {
+			return conn.isClosed();
 		}
 	}
-	
+
 	@Benchmark
-	@Group("concurrentShared")
-	@GroupThreads(WRITE_THREADS)
-	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
-	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
-	@BenchmarkMode(Mode.SingleShotTime)
-	public int sharedWrite() throws SQLException, IOException {
-		try (Connection conn = connector.getConnection(dbPath)) {
-			try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
-				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
-				return insert.executeUpdate();
-			}
-		}
-	}
-	
-	@Benchmark
-	@Group("concurrentSharedGet")
-	@GroupThreads(READ_THREADS)
-	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
-	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
-	@BenchmarkMode(Mode.SingleShotTime)
-	public boolean sharedGet() throws SQLException, IOException {
+	@Group("connectorGet")
+	public boolean connectorGet() throws SQLException, IOException {
 		try (Connection conn = connector.getConnection(dbPath)) {
 			return conn.isClosed();
 		}
 	}
 	
 	@Benchmark
-	@Group("concurrentSharedGet")
-	@GroupThreads(WRITE_THREADS)
+	@Group("defaultWrite")
 	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
 	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
 	@BenchmarkMode(Mode.SingleShotTime)
-	public int sharedWriteGetTest() throws SQLException, IOException {
+	public int defaultWrite() throws SQLException {
+		try (Connection conn = DriverManager.getConnection(url)) {
+			try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
+				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
+				return insert.executeUpdate();
+			}
+		}
+	}
+	
+	@Benchmark
+	@Group("connectorWrite")
+	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
+	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
+	@BenchmarkMode(Mode.SingleShotTime)
+	public int connectorWrite() throws SQLException, IOException {
 		try (Connection conn = connector.getConnection(dbPath)) {
 			try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
 				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
@@ -135,13 +129,45 @@ public class SQLiteConnectorBenchmark {
 	}
 	
 	@Benchmark
-	@Group("concurrentUnshared")
+	@Group("concurrentDefault")
 	@GroupThreads(READ_THREADS)
 	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
 	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
 	@BenchmarkMode(Mode.SingleShotTime)
-	public boolean unsharedRead() throws SQLException {
+	public boolean defaultConcurrentRead() throws SQLException {
 		try (Connection conn = DriverManager.getConnection(url)) {
+			try (PreparedStatement insert = conn.prepareStatement("SELECT * FROM perf_test WHERE id = ? LIMIT 1")) {
+				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
+				try (ResultSet rs =	insert.executeQuery()) {
+					return rs.next();
+				}
+			}
+		}
+	}
+
+	@Benchmark
+	@Group("concurrentDefault")
+	@GroupThreads(WRITE_THREADS)
+	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
+	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
+	@BenchmarkMode(Mode.SingleShotTime)
+	public int defaultConcurrentWrite() throws SQLException {
+		try (Connection conn = DriverManager.getConnection(url)) {
+			try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
+				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
+				return insert.executeUpdate();
+			}
+		}
+	}
+
+	@Benchmark
+	@Group("concurrentConnector")
+	@GroupThreads(READ_THREADS)
+	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
+	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
+	@BenchmarkMode(Mode.SingleShotTime)
+	public boolean connectorConcurrentRead() throws SQLException, IOException {
+		try (Connection conn = connector.getConnection(dbPath)) {
 			try (PreparedStatement insert = conn.prepareStatement("SELECT * FROM perf_test WHERE id = ? LIMIT 1")) {
 				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
 				try (ResultSet rs =	insert.executeQuery()) {
@@ -152,13 +178,13 @@ public class SQLiteConnectorBenchmark {
 	}
 	
 	@Benchmark
-	@Group("concurrentUnshared")
+	@Group("concurrentConnector")
 	@GroupThreads(WRITE_THREADS)
 	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
 	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
 	@BenchmarkMode(Mode.SingleShotTime)
-	public int unsharedWrite() throws SQLException {
-		try (Connection conn = DriverManager.getConnection(url)) {
+	public int connectorConcurrentWrite() throws SQLException, IOException {
+		try (Connection conn = connector.getConnection(dbPath)) {
 			try (PreparedStatement insert = conn.prepareStatement("INSERT INTO perf_test VALUES(?)")) {
 				insert.setString(1, testIds[ThreadLocalRandom.current().nextInt(0, testIds.length - 1)]);
 				return insert.executeUpdate();

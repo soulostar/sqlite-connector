@@ -73,4 +73,5 @@ compileJava.dependsOn checkJavaVersion
 // JMH configuration
 jmh {
 	threads = 1
+	profilers = ['stack']
 }
