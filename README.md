@@ -65,9 +65,9 @@ try (Connection conn = connector.getConnection("mydatabase.db")) {
 	// will return this same connection object.
 }
 ```
-All connections obtained this way will be shared if multiple threads want access to the same database concurrently. They will also all use the properties or user/password the connector was configured with during its construction, such as in the foreign key example above.
+All connections obtained this way will be shared if multiple threads want access to the same database concurrently. They will also all use the properties the connector was configured with during its construction, such as in the foreign key example above.
 
-Occasionally, you may want to get a connection to a database without using the properties or user/password the connector was configured with. For example, after initially building the connector to enforce foreign key constraints, you may want to get a connection with foreign key constraints not enforced, in order to drop and recreate a table. To do so, call `getUnsharedConnection`:
+Occasionally, you may want to get a connection to a database without using the properties the connector was configured with. For example, after initially building the connector to enforce foreign key constraints, you may want to get a connection with foreign key constraints not enforced, in order to drop and recreate a table. To do so, call `getUnsharedConnection`:
 ```java
 try (Connection conn = connector.getUnsharedConnection("example.db")) {
 	// This connection is unique, unshared, and subject
@@ -88,6 +88,4 @@ at some point in your code first, before using this connector.
 
 ## Todo
 - ~~Write tests~~ (Done)
-- (MAYBE) Add support for associating different user/password credentials with different databases,
-instead of using the same credentials for all shared connections.
 - Expire old entries in the connection map so it cannot grow unbounded; may convert the map to a cache
