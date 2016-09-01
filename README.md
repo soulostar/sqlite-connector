@@ -2,7 +2,7 @@
 
 ## Intro
 
-A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester. This avoids database locking exceptions, and in some cases leads to a performance boost. In some less favorable scenarios this performs negligibly slower (as opposed to being faster) than the default way to get connections using `DriverManager.getConnection`.
+A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester. The primary benefit of doing this is avoiding database locking exceptions.
 
 This very small project was inspired by [a Stack Overflow question](http://stackoverflow.com/questions/10707434/sqlite-in-a-multithreaded-java-application), in particular:
 > SQLite uses filesystem-based locks for concurrent access synchronization among processes, since as an embedded database it does not have a dedicated process (server) to schedule operations. Since each thread in your code creates its own connection to the database, it is treated as a separate process, with synchronization happening via file-based locks, which are significantly slower than any other synchronization method.
@@ -28,8 +28,10 @@ The primary function of this library is illustrated in the following code snippe
 try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
     try (Connection conn2 = connector.getConnection('C:\\mydatabase.db')) {
         // conn1 == conn2. The same connection was returned in both places.
-        // This example is mostly useless, but the functionality proves more
-        // useful when the connections are being requested from separate threads.
+        // This example is useless because both connections were obtained in
+        // the same thread, but in other situations, this avoids database 
+        // locking exceptions when multiple threads attempt to write to a 
+        // database at the same time.        
     }
 }
 ```

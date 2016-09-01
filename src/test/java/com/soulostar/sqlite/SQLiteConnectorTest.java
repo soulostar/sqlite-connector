@@ -97,32 +97,24 @@ public class SQLiteConnectorTest {
 		
 		// This test has to operate on a special temp directory other than
 		// the TemporaryFolder, because we have to test relative paths in addition
-		// to absolute/canonical paths.
+		// to absolute paths.
 		Path tmpDir = Paths.get("tmp");
 		Path relative = Paths.get("tmp", "test.db");
-		Path relative1 = Paths.get("tmp", "..", "tmp", "test.db");
-		Path absolute = Paths.get("tmp", "..", "tmp", "test.db").toAbsolutePath();
-		Path canonical = Paths.get("tmp", "test.db").toAbsolutePath();
+		Path absolute = relative.toAbsolutePath();
 		try {
 			Files.createDirectory(tmpDir);
 			try (Connection conn = connector.getConnection(relative.toString())) {
-				try (Connection conn1 = connector.getConnection(relative1.toString())) {
-					try (Connection conn2 = connector.getConnection(absolute.toString())) {
-						try (Connection conn3 = connector.getConnection(canonical.toString())) {
+					try (Connection conn1 = connector.getConnection(absolute.toString())) {
 							assertTrue(
 									"Connection requests to a database using equivalent "
-											+ "relative/absolute/canonical paths should "
+											+ "relative/absolute paths should "
 											+ "return the same connection object",
-									conn == conn1 && conn1 == conn2 && conn2 == conn3);
-						}
+									conn == conn1);
 					}
-				}
 			}
 		} finally {
 			Files.deleteIfExists(relative);
-			Files.deleteIfExists(relative1);
 			Files.deleteIfExists(absolute);
-			Files.deleteIfExists(canonical);
 			Files.deleteIfExists(tmpDir);
 		}
 	}
