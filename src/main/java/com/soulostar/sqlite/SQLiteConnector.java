@@ -89,7 +89,11 @@ public class SQLiteConnector {
 	 * database. If multiple threads want to connect to the same database
 	 * concurrently, the same connection will be returned to all of them. This
 	 * is safe to do in SQLite's default threading mode, <code>Serialized</code>
-	 * , and performs better than granting separate connections to each thread.
+	 * , and avoids database locking exceptions.
+	 * <p>
+	 * Note that the uniqueness of a database is specified by its absolute path,
+	 * <b>not</b>, for example, its canonical path. This is an intentional
+	 * design choice.
 	 * 
 	 * @param dbPath
 	 *            - the path of the target database, or <code>:memory:</code> to
@@ -112,7 +116,11 @@ public class SQLiteConnector {
 	 * database. If multiple threads want to connect to the same database
 	 * concurrently, the same connection will be returned to all of them. This
 	 * is safe to do in SQLite's default threading mode, <code>Serialized</code>
-	 * , and performs better than granting separate connections to each thread.
+	 * , and avoids database locking exceptions.
+	 * <p>
+	 * Note that the uniqueness of a database is specified by its absolute path,
+	 * <b>not</b>, for example, its canonical path. This is an intentional
+	 * design choice.
 	 * 
 	 * @param dbPath
 	 *            - the path of the target database, or <code>:memory:</code> to
@@ -135,7 +143,7 @@ public class SQLiteConnector {
 			Lock lock = locks.get(IN_MEMORY_SUBNAME);
 			lock.lock();
 			try {				
-				return getConnectionFromMap(IN_MEMORY_SUBNAME);
+				return getConnectionLocked(IN_MEMORY_SUBNAME);
 			} finally {
 				lock.unlock();
 			}
@@ -147,7 +155,7 @@ public class SQLiteConnector {
 		lock.lock();
 		try {
 			if (dbFile.exists()) {
-				return getConnectionFromMap(absolutePath);
+				return getConnectionLocked(absolutePath);
 			} else if (createIfDoesNotExist) {
 				return new SQLiteConnection(absolutePath);
 			}
@@ -174,7 +182,6 @@ public class SQLiteConnector {
 	 * @throws SQLException
 	 *             if a database access error occurs
 	 * @see {@link #getUnsharedConnection(String, Properties)}
-	 * @see {@link #getUnsharedConnection(String, String, String)}
 	 */
 	public Connection getUnsharedConnection(String dbPath) throws SQLException {
 		checkString(dbPath, "Database path");
@@ -227,7 +234,7 @@ public class SQLiteConnector {
 	 * @throws SQLException
 	 *             if a database access error occurs
 	 */
-	private SQLiteConnection getConnectionFromMap(String absolutePath) throws SQLException {
+	private SQLiteConnection getConnectionLocked(String absolutePath) throws SQLException {
 		SQLiteConnection existingConn = connectionMap.get(absolutePath);
 		if (existingConn == null || existingConn.isClosed()) {
 			return new SQLiteConnection(absolutePath);
