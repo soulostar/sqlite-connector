@@ -52,8 +52,6 @@ public class SQLiteConnector {
 	final String connectionStringPrefix;
 	
 	final Properties properties;
-	final String user;
-	final String password;
 	
 	/**
 	 * A map that maps canonical paths to SQLite connections. Paths of any other
@@ -71,8 +69,6 @@ public class SQLiteConnector {
 	SQLiteConnector(
 		String subprotocol,
 		Properties properties,
-		String user,
-		String password,
 		int lockStripes,
 		int initialCapacity,
 		float loadFactor,
@@ -82,8 +78,6 @@ public class SQLiteConnector {
 	) {
 		connectionStringPrefix = "jdbc:" + subprotocol + ":";
 		this.properties = properties;
-		this.user = user;
-		this.password = password;
 		locks = Striped.lock(lockStripes);
 		connectionMap = new ConcurrentHashMap<>(initialCapacity, loadFactor, concurrencyLevel);
 		this.canCreateDatabases = canCreateDatabases;
@@ -180,10 +174,10 @@ public class SQLiteConnector {
 	
 	/**
 	 * Gets an <b>unshared</b> connection to a database, without using any
-	 * properties or credentials.
+	 * properties.
 	 * <p>
 	 * This method is provided for convenience, facilitating opening of
-	 * connections that do not use the properties/credentials this connector was
+	 * connections that do not use the properties this connector was
 	 * configured with. Such connections can't be shared, as sharing them would
 	 * lead to unexpected and most likely incorrect behavior. See the overloads
 	 * for this method for more details.
@@ -229,40 +223,7 @@ public class SQLiteConnector {
 		checkString(dbPath, "Database path");
 		
 		return DriverManager.getConnection(connectionStringPrefix + dbPath, info);
-	}
-	
-	/**
-	 * Gets an <b>unshared</b> connection to the database using the provided
-	 * credentials.
-	 * <p>
-	 * This method does not use this connector's connection sharing
-	 * functionality. It is just for convenience. Connection sharing can't be
-	 * done because if there is an existing shared connection to the specified
-	 * database, it would have to be returned without validating the
-	 * user/password credentials provided. We <i>could</i> validate the
-	 * credentials by attempting to establish a test connection and then
-	 * returning the existing connection if valid, but at that point we are
-	 * going to have to deal with file locks anyways, which negates the
-	 * performance benefit of sharing connections.
-	 * 
-	 * @param dbPath
-	 *            - the path of the database to connect to
-	 * @param user
-	 *            - the database user on whose behalf the connection is being
-	 *            made
-	 * @param password
-	 *            - the user's password
-	 * @return an <b>unshared</b> connection to the database at the specified
-	 *         path.
-	 * @throws SQLException
-	 *             if a database access error occurs
-	 */
-	public Connection getUnsharedConnection(String dbPath, String user, String password) throws SQLException {
-		checkString(dbPath, "Database path");
-		
-		return DriverManager.getConnection(connectionStringPrefix + dbPath, user, password);
-	}
-	
+	}	
 
 	/**
 	 * Attempts to retrieve an existing connection for the specified path from
@@ -331,14 +292,8 @@ public class SQLiteConnector {
 		 */
 		private SQLiteConnection(String dbPath, boolean canonical) throws SQLException, IOException
 		{			
-			String url = connectionStringPrefix + dbPath;
-			if (properties != null) {
-				conn = DriverManager.getConnection(url, properties);
-			} else if (user != null && password != null) {
-				conn = DriverManager.getConnection(url, user, password);
-			} else {
-				conn = DriverManager.getConnection(url);		
-			}
+			String url = connectionStringPrefix + dbPath;			
+			conn = properties == null ? DriverManager.getConnection(url) : DriverManager.getConnection(url, properties);
 			
 			canonicalPath = canonical ? dbPath : new File(dbPath).getCanonicalPath();
 			

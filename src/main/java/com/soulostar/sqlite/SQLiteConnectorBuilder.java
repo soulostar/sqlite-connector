@@ -15,8 +15,6 @@ public class SQLiteConnectorBuilder {
 	
 	String subprotocol = "sqlite";
 	Properties properties;
-	String user;
-	String password;
 	int lockStripes = 4;
 	private int initialCapacity = 16;
 	private float loadFactor = 0.75f;
@@ -44,14 +42,6 @@ public class SQLiteConnectorBuilder {
 	 *         </tr>
 	 *         <tr>
 	 *             <td><code>properties</code></td>
-	 *             <td><code>null (will be ignored)</code></td>
-	 *         </tr>
-	 *         <tr>
-	 *             <td><code>user</code></td>
-	 *             <td><code>null (will be ignored)</code></td>
-	 *         </tr>
-	 *         <tr>
-	 *             <td><code>password</code></td>
 	 *             <td><code>null (will be ignored)</code></td>
 	 *         </tr>
 	 *         <tr>
@@ -140,13 +130,6 @@ public class SQLiteConnectorBuilder {
 	 * call this method and provide a <code>Properties</code> object containing
 	 * the appropriate key-value pair. How to do this varies by driver.
 	 * <p>
-	 * If this method is called, it will take precedence over
-	 * {@link #withConnectionCredentials(String, String)}; the latter method
-	 * call will have no effect on connectors created with this builder. If user
-	 * credentials as well as other properties are both needed, the credentials
-	 * should be supplied as properties in the <code>Properties</code> argument
-	 * of this method.
-	 * <p>
 	 * The properties object of this builder is copied each time
 	 * {@link #build()} is called, so connectors each have their own reference
 	 * to a distinct properties object.
@@ -159,30 +142,6 @@ public class SQLiteConnectorBuilder {
 		checkNotNull(properties, "Properties");
 		
 		this.properties = properties;
-		return this;
-	}
-	
-	/**
-	 * Specifies the credentials connections should be opened with, for
-	 * databases that are configured to use authentication.
-	 * <p>
-	 * <b>Note</b>: This method has no effect on any connectors created with
-	 * this builder if {@link #withConnectionProperties(Properties)} has also
-	 * been called. Credentials can be supplied in the <code>Properties</code>
-	 * object argument of that method if necessary.
-	 * 
-	 * @param user
-	 *            - the database user on whose behalf connections will be made
-	 * @param password
-	 *            - the user's password
-	 * @return this object, for chaining calls.
-	 */
-	public SQLiteConnectorBuilder withConnectionCredentials(String user, String password) {
-		checkNotNull(user, "User");
-		checkNotNull(password, "Password");
-		
-		this.user = user;
-		this.password = password;
 		return this;
 	}
 	
@@ -251,8 +210,6 @@ public class SQLiteConnectorBuilder {
 		return new SQLiteConnector(
 			subprotocol,
 			copyProperties(),
-			user,
-			password,
 			lockStripes,
 			initialCapacity,
 			loadFactor,

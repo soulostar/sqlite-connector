@@ -82,27 +82,6 @@ public class SQLiteConnectorBuilderTest {
 	}
 
 	@Test
-	public void withConnectionCredentials_buildsCorrectly() {
-		String builderUser = "myuser";
-		String builderPassword = "password123";
-		SQLiteConnector connector = builder.withConnectionCredentials(builderUser, builderPassword).build();
-		assertEquals("Connector's user should be equal to builder's user", builderUser, connector.user);
-		assertEquals("Connector's password should be equal to builder's password", builderPassword, connector.password);
-	}
-	
-	@Test
-	public void withConnectionCredentials_nullUserThrows() {
-		thrown.expect(NullPointerException.class);
-		builder.withConnectionCredentials(null, "testpass99");
-	}
-	
-	@Test
-	public void withConnectionCredentials_nullPasswordThrows() {
-		thrown.expect(NullPointerException.class);
-		builder.withConnectionCredentials("usertest@", null);
-	}
-
-	@Test
 	public void withLockStripes_buildsCorrectly() {
 		int builderLockStripes = 17;
 		SQLiteConnector connector = builder.withLockStripes(builderLockStripes).build();
@@ -149,8 +128,6 @@ public class SQLiteConnectorBuilderTest {
 		assertEquals("Connector should match builder's default for: properties",
 				connector.properties,
 				builder.properties);
-		assertEquals("Connector should match builder's default for: user", connector.user, builder.user);
-		assertEquals("Connector should match builder's default for: password", connector.password, builder.password);
 		assertTrue("Connector should match builder's default for: lockStripes",
 				connector.locks.size() >= builder.lockStripes);
 	}
