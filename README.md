@@ -2,7 +2,7 @@
 
 ## Intro
 
-A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester.
+A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester. This avoids database locking exceptions, and in some cases leads to a performance boost. In some less favorable scenarios this performs negligibly slower (as opposed to being faster) than the default way to get connections using `DriverManager.getConnection`.
 
 This very small project was inspired by [a Stack Overflow question](http://stackoverflow.com/questions/10707434/sqlite-in-a-multithreaded-java-application), in particular:
 > SQLite uses filesystem-based locks for concurrent access synchronization among processes, since as an embedded database it does not have a dedicated process (server) to schedule operations. Since each thread in your code creates its own connection to the database, it is treated as a separate process, with synchronization happening via file-based locks, which are significantly slower than any other synchronization method.
@@ -14,7 +14,7 @@ Keep in mind that this library is written for use with SQLite's serialized mode.
 
 ## Download
 
-The jar can be downloaded from the releases page. Ideally, this project will be available in a central repository sometime soon for use with Gradle, Maven, etc.
+Working on uploading to a central repository sometime soon for use with Gradle, Maven, etc.
 
 ## Requirements
 
@@ -88,6 +88,6 @@ at some point in your code first, before using this connector.
 
 ## Todo
 - ~~Write tests~~ (Done)
-- Add support for associating different user/password credentials with different databases,
+- (MAYBE) Add support for associating different user/password credentials with different databases,
 instead of using the same credentials for all shared connections.
 - Expire old entries in the connection map so it cannot grow unbounded; may convert the map to a cache
