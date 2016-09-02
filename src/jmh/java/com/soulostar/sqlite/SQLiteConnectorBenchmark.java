@@ -100,8 +100,14 @@ public class SQLiteConnectorBenchmark {
 		}
 	}
 	
+	// This benchmark is likely to fail. The number of threads makes it
+	// highly likely two threads will attempt a write at the same time
+	// and a database locking exception will be thrown. Note that the
+	// connectorWrite() benchmark that uses a SQLiteConnector to get
+	// the connection instead does not fail.
 	@Benchmark
 	@Group("defaultWrite")
+	@GroupThreads(5)
 	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
 	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
 	@BenchmarkMode(Mode.SingleShotTime)
@@ -116,6 +122,7 @@ public class SQLiteConnectorBenchmark {
 	
 	@Benchmark
 	@Group("connectorWrite")
+	@GroupThreads(5)
 	@Warmup(iterations = WARMUP_ITERATIONS, batchSize = WARMUP_BATCH_SIZE)
 	@Measurement(iterations = MEASUREMENT_ITERATIONS, batchSize = MEASUREMENT_BATCH_SIZE)
 	@BenchmarkMode(Mode.SingleShotTime)

@@ -1,0 +1,1052 @@
+# These are sample benchmark results from a run on Windows 8.1 Pro
+# using Eclipse, the Buildship Eclipse plugin, and jmh-gradle-plugin.
+# Eclipse was the only application running for the entirety of the
+# benchmark run.
+#
+# Processor: Intel Core i5-5300U CPU @ 2.30GHz
+# Installed memory (RAM): 12.0 GB (11.7 GB usable)
+# System type: 64-bit Operating System, x64-based processor
+#
+# Scroll to the bottom to see the results. Benchmark groups containing
+# "default" in their name indicate that connections were obtained
+# using DriverManager.getConnection(). Groups containing "connector"
+# in their name indicate that connections were obtained using
+# SQLiteConnector.getConnection().
+---------------------------------------------------------------------
+
+Working Directory: D:\workspaces\SQLiteConnector
+Gradle Distribution: Gradle wrapper from target build
+Gradle Version: 2.14
+Java Home: C:\Program Files (x86)\Java\jdk1.7.0_79
+JVM Arguments: None
+Program Arguments: None
+Gradle Tasks: jmh
+
+:checkJavaVersion
+:compileJava UP-TO-DATE
+:processResources UP-TO-DATE
+:classes UP-TO-DATE
+:compileTestJava UP-TO-DATE
+:processTestResources UP-TO-DATE
+:testClasses UP-TO-DATE
+:compileJmhJava UP-TO-DATE
+:processJmhResources UP-TO-DATE
+:jmhClasses UP-TO-DATE
+:jmhRunBytecodeGenerator UP-TO-DATE
+:jmhCompileGeneratedClasses UP-TO-DATE
+:jmhJar UP-TO-DATE
+:jmh
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 20 iterations, 1 s each
+# Measurement: 20 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.connectorGet
+
+# Run progress: 0.00% complete, ETA 00:02:40
+# Fork: 1 of 2
+# Warmup Iteration   1: 779.411 ops/s
+# Warmup Iteration   2: 1827.177 ops/s
+# Warmup Iteration   3: 1378.712 ops/s
+# Warmup Iteration   4: 1280.761 ops/s
+# Warmup Iteration   5: 1830.099 ops/s
+# Warmup Iteration   6: 2092.920 ops/s
+# Warmup Iteration   7: 2128.443 ops/s
+# Warmup Iteration   8: 2171.807 ops/s
+# Warmup Iteration   9: 2280.484 ops/s
+# Warmup Iteration  10: 2388.677 ops/s
+# Warmup Iteration  11: 2381.439 ops/s
+# Warmup Iteration  12: 2313.373 ops/s
+# Warmup Iteration  13: 2341.321 ops/s
+# Warmup Iteration  14: 2345.621 ops/s
+# Warmup Iteration  15: 2342.991 ops/s
+# Warmup Iteration  16: 1242.474 ops/s
+# Warmup Iteration  17: 934.181 ops/s
+# Warmup Iteration  18: 1751.532 ops/s
+# Warmup Iteration  19: 2324.719 ops/s
+# Warmup Iteration  20: 2352.002 ops/s
+Iteration   1: 2382.781 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   2: 2428.392 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   3: 2560.380 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   4: 2475.241 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   5: 2359.279 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   6: 2540.884 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   7: 1445.299 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   8: 1376.977 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   9: 1663.616 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  10: 2154.303 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  11: 2351.679 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  12: 1921.125 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  13: 2404.756 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  14: 1116.873 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  15: 1682.395 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  16: 1851.771 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  17: 1321.239 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  18: 1105.048 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  19: 996.544 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  20: 997.276 ops/s
+                 ·stack: <delayed till summary>
+
+
+# Run progress: 24.99% complete, ETA 00:02:02
+# Fork: 2 of 2
+# Warmup Iteration   1: 1259.193 ops/s
+# Warmup Iteration   2: 1318.293 ops/s
+# Warmup Iteration   3: 780.393 ops/s
+# Warmup Iteration   4: 908.441 ops/s
+# Warmup Iteration   5: 1303.622 ops/s
+# Warmup Iteration   6: 1396.604 ops/s
+# Warmup Iteration   7: 947.130 ops/s
+# Warmup Iteration   8: 888.626 ops/s
+# Warmup Iteration   9: 1816.916 ops/s
+# Warmup Iteration  10: 2215.432 ops/s
+# Warmup Iteration  11: 1188.289 ops/s
+# Warmup Iteration  12: 949.136 ops/s
+# Warmup Iteration  13: 1488.651 ops/s
+# Warmup Iteration  14: 923.501 ops/s
+# Warmup Iteration  15: 1889.299 ops/s
+# Warmup Iteration  16: 987.726 ops/s
+# Warmup Iteration  17: 1357.134 ops/s
+# Warmup Iteration  18: 926.768 ops/s
+# Warmup Iteration  19: 1273.620 ops/s
+# Warmup Iteration  20: 903.724 ops/s
+Iteration   1: 980.542 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   2: 2028.166 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   3: 2396.384 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   4: 2408.735 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   5: 2313.174 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   6: 1505.420 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   7: 985.002 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   8: 1484.550 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   9: 1587.643 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  10: 1653.764 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  11: 1274.554 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  12: 1018.210 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  13: 996.725 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  14: 1290.639 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  15: 2592.101 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  16: 1054.086 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  17: 2049.906 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  18: 2349.510 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  19: 2378.495 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  20: 1446.497 ops/s
+                 ·stack: <delayed till summary>
+
+
+
+Result "connectorGet":
+  1773.249 ±(99.9%) 320.416 ops/s [Average]
+  (min, avg, max) = (980.542, 1773.249, 2592.101), stdev = 569.538
+  CI (99.9%): [1452.833, 2093.664] (assumes normal distribution)
+
+Secondary result "·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+100.0%         RUNNABLE
+
+....[Thread state: RUNNABLE]........................................................................
+ 87.5%  87.5% org.sqlite.NativeDB._exec
+  5.7%   5.7% org.sqlite.NativeDB._open
+  3.0%   3.0% org.sqlite.NativeDB._close
+  2.0%   2.0% java.io.WinNTFileSystem.getBooleanAttributes
+  0.5%   0.5% sun.reflect.Reflection.getCallerClass
+  0.3%   0.3% java.lang.Object.<init>
+  0.3%   0.3% java.lang.Class.forName0
+  0.2%   0.2% org.sqlite.NativeDB.free_functions
+  0.2%   0.2% sun.reflect.Reflection.getClassAccessFlags
+  0.1%   0.1% java.lang.Object.clone
+  0.2%   0.2% <other>
+
+
+
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 20 iterations, 1 s each
+# Measurement: 20 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.defaultGet
+
+# Run progress: 49.98% complete, ETA 00:01:21
+# Fork: 1 of 2
+# Warmup Iteration   1: 910.371 ops/s
+# Warmup Iteration   2: 1327.215 ops/s
+# Warmup Iteration   3: 851.910 ops/s
+# Warmup Iteration   4: 851.029 ops/s
+# Warmup Iteration   5: 1147.098 ops/s
+# Warmup Iteration   6: 890.893 ops/s
+# Warmup Iteration   7: 1092.774 ops/s
+# Warmup Iteration   8: 1037.342 ops/s
+# Warmup Iteration   9: 900.003 ops/s
+# Warmup Iteration  10: 931.698 ops/s
+# Warmup Iteration  11: 1542.127 ops/s
+# Warmup Iteration  12: 1150.734 ops/s
+# Warmup Iteration  13: 999.354 ops/s
+# Warmup Iteration  14: 1208.925 ops/s
+# Warmup Iteration  15: 1009.114 ops/s
+# Warmup Iteration  16: 1122.732 ops/s
+# Warmup Iteration  17: 1027.203 ops/s
+# Warmup Iteration  18: 940.527 ops/s
+# Warmup Iteration  19: 1414.006 ops/s
+# Warmup Iteration  20: 2212.400 ops/s
+Iteration   1: 1012.208 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   2: 1107.450 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   3: 1296.540 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   4: 1102.833 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   5: 1294.080 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   6: 1291.710 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   7: 988.062 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   8: 994.995 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   9: 1029.872 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  10: 980.771 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  11: 1093.198 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  12: 1411.499 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  13: 1413.058 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  14: 1140.147 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  15: 1077.330 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  16: 1052.740 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  17: 1147.601 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  18: 1080.516 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  19: 1060.862 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  20: 1279.453 ops/s
+                 ·stack: <delayed till summary>
+
+
+# Run progress: 74.96% complete, ETA 00:00:40
+# Fork: 2 of 2
+# Warmup Iteration   1: 1121.429 ops/s
+# Warmup Iteration   2: 1675.721 ops/s
+# Warmup Iteration   3: 1106.068 ops/s
+# Warmup Iteration   4: 853.091 ops/s
+# Warmup Iteration   5: 821.355 ops/s
+# Warmup Iteration   6: 942.591 ops/s
+# Warmup Iteration   7: 1006.882 ops/s
+# Warmup Iteration   8: 948.333 ops/s
+# Warmup Iteration   9: 937.441 ops/s
+# Warmup Iteration  10: 1251.344 ops/s
+# Warmup Iteration  11: 965.282 ops/s
+# Warmup Iteration  12: 1031.145 ops/s
+# Warmup Iteration  13: 1365.038 ops/s
+# Warmup Iteration  14: 1382.884 ops/s
+# Warmup Iteration  15: 951.896 ops/s
+# Warmup Iteration  16: 1010.245 ops/s
+# Warmup Iteration  17: 1090.389 ops/s
+# Warmup Iteration  18: 1040.604 ops/s
+# Warmup Iteration  19: 1099.673 ops/s
+# Warmup Iteration  20: 962.681 ops/s
+Iteration   1: 1193.082 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   2: 998.696 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   3: 998.185 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   4: 1166.212 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   5: 1008.653 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   6: 988.049 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   7: 1091.623 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   8: 1001.280 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration   9: 1104.724 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  10: 1212.632 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  11: 1606.584 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  12: 1128.964 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  13: 1106.100 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  14: 1126.735 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  15: 1043.449 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  16: 1048.052 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  17: 1090.713 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  18: 1525.480 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  19: 1110.388 ops/s
+                 ·stack: <delayed till summary>
+
+Iteration  20: 1116.678 ops/s
+                 ·stack: <delayed till summary>
+
+
+
+Result "defaultGet":
+  1138.030 ±(99.9%) 83.745 ops/s [Average]
+  (min, avg, max) = (980.771, 1138.030, 1606.584), stdev = 148.857
+  CI (99.9%): [1054.285, 1221.775] (assumes normal distribution)
+
+Secondary result "·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+100.0%         RUNNABLE
+
+....[Thread state: RUNNABLE]........................................................................
+ 84.4%  84.4% org.sqlite.NativeDB._exec
+  7.2%   7.2% org.sqlite.NativeDB._open
+  4.2%   4.2% org.sqlite.NativeDB._close
+  2.1%   2.1% java.io.WinNTFileSystem.getBooleanAttributes
+  0.6%   0.6% java.lang.Class.forName0
+  0.5%   0.5% java.lang.Object.<init>
+  0.3%   0.3% sun.reflect.Reflection.getCallerClass
+  0.3%   0.3% org.sqlite.NativeDB.free_functions
+  0.1%   0.1% java.lang.Object.clone
+  0.1%   0.1% com.soulostar.sqlite.Utils.checkString
+  0.2%   0.2% <other>
+
+
+
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 5 iterations, single-shot each, 1000 calls per op
+# Measurement: 5 iterations, single-shot each, 1000 calls per op
+# Timeout: 10 min per iteration
+# Threads: 5 threads
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.concurrentConnector
+
+# Run progress: 99.95% complete, ETA 00:00:00
+# Fork: 1 of 2
+# Warmup Iteration   1: 14.585 ±(99.9%) 1.750 s/op
+# Warmup Iteration   2: 14.134 ±(99.9%) 1.139 s/op
+# Warmup Iteration   3: 14.035 ±(99.9%) 1.320 s/op
+# Warmup Iteration   4: 14.237 ±(99.9%) 1.084 s/op
+# Warmup Iteration   5: 14.031 ±(99.9%) 2.301 s/op
+Iteration   1: 13.888 ±(99.9%) 3.253 s/op
+                 connectorConcurrentRead:  14.258 ±(99.9%) 1.341 s/op
+                 connectorConcurrentWrite: 12.412 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   2: 14.087 ±(99.9%) 3.717 s/op
+                 connectorConcurrentRead:  14.505 ±(99.9%) 1.817 s/op
+                 connectorConcurrentWrite: 12.417 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   3: 13.858 ±(99.9%) 2.717 s/op
+                 connectorConcurrentRead:  14.159 ±(99.9%) 1.580 s/op
+                 connectorConcurrentWrite: 12.654 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   4: 13.867 ±(99.9%) 2.585 s/op
+                 connectorConcurrentRead:  14.152 ±(99.9%) 1.572 s/op
+                 connectorConcurrentWrite: 12.726 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   5: 13.903 ±(99.9%) 3.122 s/op
+                 connectorConcurrentRead:  14.257 ±(99.9%) 1.335 s/op
+                 connectorConcurrentWrite: 12.489 s/op
+                 ·stack:                   <delayed till summary>
+
+
+# Run progress: 99.96% complete, ETA 00:00:00
+# Fork: 2 of 2
+# Warmup Iteration   1: 14.816 ±(99.9%) 2.518 s/op
+# Warmup Iteration   2: 14.589 ±(99.9%) 0.487 s/op
+# Warmup Iteration   3: 15.655 ±(99.9%) 1.479 s/op
+# Warmup Iteration   4: 17.184 ±(99.9%) 1.344 s/op
+# Warmup Iteration   5: 17.405 ±(99.9%) 2.215 s/op
+Iteration   1: 17.868 ±(99.9%) 1.421 s/op
+                 connectorConcurrentRead:  17.999 ±(99.9%) 1.677 s/op
+                 connectorConcurrentWrite: 17.344 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   2: 17.368 ±(99.9%) 1.283 s/op
+                 connectorConcurrentRead:  17.472 ±(99.9%) 1.777 s/op
+                 connectorConcurrentWrite: 16.951 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   3: 17.110 ±(99.9%) 1.441 s/op
+                 connectorConcurrentRead:  17.217 ±(99.9%) 2.153 s/op
+                 connectorConcurrentWrite: 16.684 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   4: 17.463 ±(99.9%) 1.716 s/op
+                 connectorConcurrentRead:  17.521 ±(99.9%) 3.178 s/op
+                 connectorConcurrentWrite: 17.228 s/op
+                 ·stack:                   <delayed till summary>
+
+Iteration   5: 17.306 ±(99.9%) 2.023 s/op
+                 connectorConcurrentRead:  17.487 ±(99.9%) 2.513 s/op
+                 connectorConcurrentWrite: 16.585 s/op
+                 ·stack:                   <delayed till summary>
+
+
+
+Result "connectorConcurrentWrite":
+  N = 10
+  mean =     15.672 ±(99.9%) 2.807 s/op
+
+  Histogram, s/op:
+    [13.000, 13.500) = 0 
+    [13.500, 14.000) = 4 
+    [14.000, 14.500) = 1 
+    [14.500, 15.000) = 0 
+    [15.000, 15.500) = 0 
+    [15.500, 16.000) = 0 
+    [16.000, 16.500) = 0 
+    [16.500, 17.000) = 0 
+    [17.000, 17.500) = 4 
+
+  Percentiles, s/op:
+      p(0.0000) =     13.858 s/op
+     p(50.0000) =     15.599 s/op
+     p(90.0000) =     17.827 s/op
+     p(95.0000) =     17.868 s/op
+     p(99.0000) =     17.868 s/op
+     p(99.9000) =     17.868 s/op
+     p(99.9900) =     17.868 s/op
+     p(99.9990) =     17.868 s/op
+     p(99.9999) =     17.868 s/op
+    p(100.0000) =     17.868 s/op
+
+Secondary result "connectorConcurrentRead":
+  N = 10
+  mean =     15.903 ±(99.9%) 2.628 s/op
+
+  Histogram, s/op:
+    [14.000, 14.250) = 2 
+    [14.250, 14.500) = 2 
+    [14.500, 14.750) = 1 
+    [14.750, 15.000) = 0 
+    [15.000, 15.250) = 0 
+    [15.250, 15.500) = 0 
+    [15.500, 15.750) = 0 
+    [15.750, 16.000) = 0 
+    [16.000, 16.250) = 0 
+    [16.250, 16.500) = 0 
+    [16.500, 16.750) = 0 
+    [16.750, 17.000) = 0 
+    [17.000, 17.250) = 1 
+    [17.250, 17.500) = 2 
+    [17.500, 17.750) = 1 
+
+  Percentiles, s/op:
+      p(0.0000) =     14.152 s/op
+     p(50.0000) =     15.861 s/op
+     p(90.0000) =     17.951 s/op
+     p(95.0000) =     17.999 s/op
+     p(99.0000) =     17.999 s/op
+     p(99.9000) =     17.999 s/op
+     p(99.9900) =     17.999 s/op
+     p(99.9990) =     17.999 s/op
+     p(99.9999) =     17.999 s/op
+    p(100.0000) =     17.999 s/op
+
+Secondary result "connectorConcurrentWrite":
+  N = 10
+  mean =     14.749 ±(99.9%) 3.540 s/op
+
+  Histogram, s/op:
+    [12.000, 12.500) = 3 
+    [12.500, 13.000) = 2 
+    [13.000, 13.500) = 0 
+    [13.500, 14.000) = 0 
+    [14.000, 14.500) = 0 
+    [14.500, 15.000) = 0 
+    [15.000, 15.500) = 0 
+    [15.500, 16.000) = 0 
+    [16.000, 16.500) = 0 
+    [16.500, 17.000) = 3 
+    [17.000, 17.500) = 2 
+
+  Percentiles, s/op:
+      p(0.0000) =     12.412 s/op
+     p(50.0000) =     14.656 s/op
+     p(90.0000) =     17.333 s/op
+     p(95.0000) =     17.344 s/op
+     p(99.0000) =     17.344 s/op
+     p(99.9000) =     17.344 s/op
+     p(99.9900) =     17.344 s/op
+     p(99.9990) =     17.344 s/op
+     p(99.9999) =     17.344 s/op
+    p(100.0000) =     17.344 s/op
+
+Secondary result "·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 58.1%         RUNNABLE
+ 38.0%         BLOCKED
+  3.9%         WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 35.8%  61.6% java.lang.Thread.isInterrupted
+ 14.7%  25.3% org.sqlite.NativeDB._exec
+  4.7%   8.0% org.sqlite.NativeDB.step
+  1.7%   2.9% com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_concurrentConnector_jmhTest.connectorConcurrentRead_ss_jmhStub
+  0.4%   0.6% java.io.WinNTFileSystem.getBooleanAttributes
+  0.3%   0.5% com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_concurrentConnector_jmhTest.connectorConcurrentWrite_ss_jmhStub
+  0.1%   0.2% org.sqlite.NativeDB.prepare
+  0.1%   0.1% org.sqlite.NativeDB.reset
+  0.1%   0.1% java.util.Hashtable.<init>
+  0.1%   0.1% sun.misc.Unsafe.unpark
+  0.3%   0.5% <other>
+
+....[Thread state: BLOCKED].........................................................................
+ 12.8%  33.7% org.sqlite.NativeDB.reset
+ 10.8%  28.5% org.sqlite.DB.prepare
+  3.2%   8.3% org.sqlite.NativeDB.column_count
+  2.8%   7.4% org.sqlite.NativeDB._exec
+  2.4%   6.3% org.sqlite.NativeDB.bind_parameter_count
+  2.3%   5.9% org.sqlite.DB.execute
+  2.0%   5.3% org.sqlite.DB.column_names
+  1.3%   3.4% org.sqlite.DB.finalize
+  0.4%   1.2% org.sqlite.DB.executeUpdate
+  0.0%   0.0% org.sqlite.NativeDB.changes
+
+....[Thread state: WAITING].........................................................................
+  3.9% 100.0% sun.misc.Unsafe.park
+
+
+
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 5 iterations, single-shot each, 1000 calls per op
+# Measurement: 5 iterations, single-shot each, 1000 calls per op
+# Timeout: 10 min per iteration
+# Threads: 5 threads
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.concurrentDefault
+
+# Run progress: 99.96% complete, ETA 00:00:00
+# Fork: 1 of 2
+# Warmup Iteration   1: 29.904 ±(99.9%) 23.404 s/op
+# Warmup Iteration   2: 30.906 ±(99.9%) 17.711 s/op
+# Warmup Iteration   3: 31.668 ±(99.9%) 25.471 s/op
+# Warmup Iteration   4: 32.789 ±(99.9%) 21.586 s/op
+# Warmup Iteration   5: 31.325 ±(99.9%) 20.384 s/op
+Iteration   1: 29.584 ±(99.9%) 21.108 s/op
+                 defaultConcurrentRead:  27.155 ±(99.9%) 5.587 s/op
+                 defaultConcurrentWrite: 39.298 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   2: 31.094 ±(99.9%) 27.106 s/op
+                 defaultConcurrentRead:  28.628 ±(99.9%) 32.647 s/op
+                 defaultConcurrentWrite: 40.958 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   3: 31.071 ±(99.9%) 24.475 s/op
+                 defaultConcurrentRead:  28.597 ±(99.9%) 23.356 s/op
+                 defaultConcurrentWrite: 40.966 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   4: 31.999 ±(99.9%) 25.898 s/op
+                 defaultConcurrentRead:  29.557 ±(99.9%) 29.311 s/op
+                 defaultConcurrentWrite: 41.765 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   5: 31.411 ±(99.9%) 21.239 s/op
+                 defaultConcurrentRead:  28.963 ±(99.9%) 5.110 s/op
+                 defaultConcurrentWrite: 41.202 s/op
+                 ·stack:                 <delayed till summary>
+
+
+# Run progress: 99.97% complete, ETA 00:00:00
+# Fork: 2 of 2
+# Warmup Iteration   1: 28.984 ±(99.9%) 22.345 s/op
+# Warmup Iteration   2: 31.712 ±(99.9%) 22.141 s/op
+# Warmup Iteration   3: 31.745 ±(99.9%) 18.635 s/op
+# Warmup Iteration   4: 31.607 ±(99.9%) 29.109 s/op
+# Warmup Iteration   5: 30.890 ±(99.9%) 22.144 s/op
+Iteration   1: 29.479 ±(99.9%) 23.948 s/op
+                 defaultConcurrentRead:  26.914 ±(99.9%) 17.961 s/op
+                 defaultConcurrentWrite: 39.737 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   2: 29.747 ±(99.9%) 28.537 s/op
+                 defaultConcurrentRead:  26.939 ±(99.9%) 29.373 s/op
+                 defaultConcurrentWrite: 40.979 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   3: 30.194 ±(99.9%) 27.059 s/op
+                 defaultConcurrentRead:  27.529 ±(99.9%) 27.797 s/op
+                 defaultConcurrentWrite: 40.853 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   4: 28.645 ±(99.9%) 23.583 s/op
+                 defaultConcurrentRead:  26.064 ±(99.9%) 15.266 s/op
+                 defaultConcurrentWrite: 38.972 s/op
+                 ·stack:                 <delayed till summary>
+
+Iteration   5: 32.336 ±(99.9%) 21.067 s/op
+                 defaultConcurrentRead:  30.189 ±(99.9%) 19.563 s/op
+                 defaultConcurrentWrite: 40.927 s/op
+                 ·stack:                 <delayed till summary>
+
+
+
+Result "defaultConcurrentRead":
+  N = 10
+  mean =     30.556 ±(99.9%) 1.823 s/op
+
+  Histogram, s/op:
+    [28.000, 28.500) = 0 
+    [28.500, 29.000) = 1 
+    [29.000, 29.500) = 1 
+    [29.500, 30.000) = 2 
+    [30.000, 30.500) = 1 
+    [30.500, 31.000) = 0 
+    [31.000, 31.500) = 3 
+    [31.500, 32.000) = 1 
+    [32.000, 32.500) = 1 
+
+  Percentiles, s/op:
+      p(0.0000) =     28.645 s/op
+     p(50.0000) =     30.632 s/op
+     p(90.0000) =     32.303 s/op
+     p(95.0000) =     32.336 s/op
+     p(99.0000) =     32.336 s/op
+     p(99.9000) =     32.336 s/op
+     p(99.9900) =     32.336 s/op
+     p(99.9990) =     32.336 s/op
+     p(99.9999) =     32.336 s/op
+    p(100.0000) =     32.336 s/op
+
+Secondary result "defaultConcurrentRead":
+  N = 10
+  mean =     28.054 ±(99.9%) 2.007 s/op
+
+  Histogram, s/op:
+    [26.000, 26.500) = 1 
+    [26.500, 27.000) = 2 
+    [27.000, 27.500) = 1 
+    [27.500, 28.000) = 1 
+    [28.000, 28.500) = 0 
+    [28.500, 29.000) = 3 
+    [29.000, 29.500) = 0 
+    [29.500, 30.000) = 1 
+    [30.000, 30.500) = 1 
+
+  Percentiles, s/op:
+      p(0.0000) =     26.064 s/op
+     p(50.0000) =     28.063 s/op
+     p(90.0000) =     30.126 s/op
+     p(95.0000) =     30.189 s/op
+     p(99.0000) =     30.189 s/op
+     p(99.9000) =     30.189 s/op
+     p(99.9900) =     30.189 s/op
+     p(99.9990) =     30.189 s/op
+     p(99.9999) =     30.189 s/op
+    p(100.0000) =     30.189 s/op
+
+Secondary result "defaultConcurrentWrite":
+  N = 10
+  mean =     40.566 ±(99.9%) 1.369 s/op
+
+  Histogram, s/op:
+    [38.000, 38.250) = 0 
+    [38.250, 38.500) = 0 
+    [38.500, 38.750) = 0 
+    [38.750, 39.000) = 1 
+    [39.000, 39.250) = 0 
+    [39.250, 39.500) = 1 
+    [39.500, 39.750) = 1 
+    [39.750, 40.000) = 0 
+    [40.000, 40.250) = 0 
+    [40.250, 40.500) = 0 
+    [40.500, 40.750) = 0 
+    [40.750, 41.000) = 5 
+    [41.000, 41.250) = 1 
+    [41.250, 41.500) = 0 
+    [41.500, 41.750) = 0 
+
+  Percentiles, s/op:
+      p(0.0000) =     38.972 s/op
+     p(50.0000) =     40.942 s/op
+     p(90.0000) =     41.708 s/op
+     p(95.0000) =     41.765 s/op
+     p(99.0000) =     41.765 s/op
+     p(99.9000) =     41.765 s/op
+     p(99.9900) =     41.765 s/op
+     p(99.9990) =     41.765 s/op
+     p(99.9999) =     41.765 s/op
+    p(100.0000) =     41.765 s/op
+
+Secondary result "·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 88.7%         RUNNABLE
+ 11.3%         WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 29.0%  32.7% org.sqlite.NativeDB.prepare
+ 24.8%  28.0% java.lang.Thread.isInterrupted
+ 15.7%  17.7% org.sqlite.NativeDB._exec
+ 13.2%  14.9% org.sqlite.NativeDB.step
+  2.0%   2.3% org.sqlite.NativeDB._close
+  1.5%   1.7% com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_concurrentDefault_jmhTest.defaultConcurrentRead_ss_jmhStub
+  1.3%   1.5% java.io.WinNTFileSystem.getBooleanAttributes
+  0.4%   0.5% org.sqlite.NativeDB._open
+  0.4%   0.4% com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_concurrentDefault_jmhTest.defaultConcurrentWrite_ss_jmhStub
+  0.1%   0.1% sun.jdbc.odbc.JdbcOdbcDriver.connect
+  0.3%   0.3% <other>
+
+....[Thread state: WAITING].........................................................................
+ 11.3% 100.0% sun.misc.Unsafe.park
+
+
+
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 5 iterations, single-shot each, 1000 calls per op
+# Measurement: 5 iterations, single-shot each, 1000 calls per op
+# Timeout: 10 min per iteration
+# Threads: 5 threads
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.connectorWrite
+
+# Run progress: 99.98% complete, ETA 00:00:00
+# Fork: 1 of 2
+# Warmup Iteration   1: 42.169 ±(99.9%) 1.280 s/op
+# Warmup Iteration   2: 39.500 ±(99.9%) 2.725 s/op
+# Warmup Iteration   3: 39.171 ±(99.9%) 1.821 s/op
+# Warmup Iteration   4: 39.443 ±(99.9%) 2.815 s/op
+# Warmup Iteration   5: 39.463 ±(99.9%) 1.413 s/op
+Iteration   1: 39.343 ±(99.9%) 1.328 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   2: 39.332 ±(99.9%) 2.487 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   3: 39.215 ±(99.9%) 1.355 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   4: 39.937 ±(99.9%) 2.085 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   5: 39.006 ±(99.9%) 3.195 s/op
+                 ·stack: <delayed till summary>
+
+
+# Run progress: 99.98% complete, ETA 00:00:00
+# Fork: 2 of 2
+# Warmup Iteration   1: 42.635 ±(99.9%) 3.374 s/op
+# Warmup Iteration   2: 39.573 ±(99.9%) 2.690 s/op
+# Warmup Iteration   3: 38.919 ±(99.9%) 1.451 s/op
+# Warmup Iteration   4: 39.239 ±(99.9%) 2.183 s/op
+# Warmup Iteration   5: 38.779 ±(99.9%) 2.206 s/op
+Iteration   1: 38.981 ±(99.9%) 1.041 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   2: 39.240 ±(99.9%) 0.781 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   3: 39.148 ±(99.9%) 1.857 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   4: 39.466 ±(99.9%) 2.167 s/op
+                 ·stack: <delayed till summary>
+
+Iteration   5: 39.534 ±(99.9%) 2.014 s/op
+                 ·stack: <delayed till summary>
+
+
+
+Result "connectorWrite":
+  N = 10
+  mean =     39.320 ±(99.9%) 0.424 s/op
+
+  Histogram, s/op:
+    [38.900, 39.000) = 1 
+    [39.000, 39.100) = 1 
+    [39.100, 39.200) = 1 
+    [39.200, 39.300) = 2 
+    [39.300, 39.400) = 2 
+    [39.400, 39.500) = 1 
+    [39.500, 39.600) = 1 
+    [39.600, 39.700) = 0 
+    [39.700, 39.800) = 0 
+    [39.800, 39.900) = 0 
+
+  Percentiles, s/op:
+      p(0.0000) =     38.981 s/op
+     p(50.0000) =     39.286 s/op
+     p(90.0000) =     39.897 s/op
+     p(95.0000) =     39.937 s/op
+     p(99.0000) =     39.937 s/op
+     p(99.9000) =     39.937 s/op
+     p(99.9900) =     39.937 s/op
+     p(99.9990) =     39.937 s/op
+     p(99.9999) =     39.937 s/op
+    p(100.0000) =     39.937 s/op
+
+Secondary result "·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 55.0%         RUNNABLE
+ 42.3%         BLOCKED
+  2.7%         WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 33.4%  60.7% java.lang.Thread.isInterrupted
+ 11.6%  21.2% org.sqlite.NativeDB.step
+  7.8%  14.2% org.sqlite.NativeDB._exec
+  1.2%   2.2% com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_connectorWrite_jmhTest.connectorWrite_ss_jmhStub
+  0.5%   0.9% java.io.WinNTFileSystem.getBooleanAttributes
+  0.1%   0.1% org.sqlite.NativeDB.reset
+  0.1%   0.1% sun.misc.Unsafe.unpark
+  0.1%   0.1% org.sqlite.NativeDB._close
+  0.0%   0.1% java.lang.Object.<init>
+  0.0%   0.1% java.util.Hashtable.<init>
+  0.2%   0.3% <other>
+
+....[Thread state: BLOCKED].........................................................................
+ 20.4%  48.1% org.sqlite.DB.prepare
+  9.4%  22.1% org.sqlite.NativeDB.reset
+  8.0%  18.8% org.sqlite.NativeDB._exec
+  2.0%   4.6% org.sqlite.DB.executeUpdate
+  1.3%   3.1% org.sqlite.NativeDB.column_count
+  0.8%   1.9% org.sqlite.DB.column_names
+  0.4%   1.0% org.sqlite.NativeDB.bind_parameter_count
+  0.1%   0.3% org.sqlite.NativeDB.changes
+  0.0%   0.0% org.sqlite.DB.finalize
+  0.0%   0.0% java.util.Arrays.copyOfRange
+
+....[Thread state: WAITING].........................................................................
+  2.7% 100.0% sun.misc.Unsafe.park
+
+
+
+# JMH 1.12 (released 153 days ago, please consider updating!)
+# VM version: JDK 1.7.0_79, VM 24.79-b02
+# VM invoker: C:\Program Files (x86)\Java\jdk1.7.0_79\jre\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=US -Duser.language=en -Duser.variant
+# Warmup: 5 iterations, single-shot each, 1000 calls per op
+# Measurement: 5 iterations, single-shot each, 1000 calls per op
+# Timeout: 10 min per iteration
+# Threads: 5 threads
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.soulostar.sqlite.SQLiteConnectorBenchmark.defaultWrite
+
+# Run progress: 99.99% complete, ETA 00:00:00
+# Fork: 1 of 2
+# Warmup Iteration   1: <failure>
+
+java.sql.SQLException: [SQLITE_BUSY]  The database file is locked (database is locked)
+	at org.sqlite.DB.newSQLException(DB.java:383)
+	at org.sqlite.DB.newSQLException(DB.java:387)
+	at org.sqlite.DB.execute(DB.java:339)
+	at org.sqlite.DB.executeUpdate(DB.java:363)
+	at org.sqlite.PrepStmt.executeUpdate(PrepStmt.java:85)
+	at com.soulostar.sqlite.SQLiteConnectorBenchmark.defaultWrite(SQLiteConnectorBenchmark.java:118)
+	at com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_defaultWrite_jmhTest.defaultWrite_ss_jmhStub(SQLiteConnectorBenchmark_defaultWrite_jmhTest.java:620)
+	at com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_defaultWrite_jmhTest.defaultWrite_SingleShotTime(SQLiteConnectorBenchmark_defaultWrite_jmhTest.java:565)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:430)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:412)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+
+# Run progress: 99.99% complete, ETA 00:00:00
+# Fork: 2 of 2
+# Warmup Iteration   1: <failure>
+
+java.sql.SQLException: [SQLITE_BUSY]  The database file is locked (database is locked)
+	at org.sqlite.DB.newSQLException(DB.java:383)
+	at org.sqlite.DB.newSQLException(DB.java:387)
+	at org.sqlite.DB.execute(DB.java:339)
+	at org.sqlite.DB.executeUpdate(DB.java:363)
+	at org.sqlite.PrepStmt.executeUpdate(PrepStmt.java:85)
+	at com.soulostar.sqlite.SQLiteConnectorBenchmark.defaultWrite(SQLiteConnectorBenchmark.java:118)
+	at com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_defaultWrite_jmhTest.defaultWrite_ss_jmhStub(SQLiteConnectorBenchmark_defaultWrite_jmhTest.java:620)
+	at com.soulostar.sqlite.generated.SQLiteConnectorBenchmark_defaultWrite_jmhTest.defaultWrite_SingleShotTime(SQLiteConnectorBenchmark_defaultWrite_jmhTest.java:565)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:430)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:412)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+
+
+# Run complete. Total time: 01:16:50
+
+Benchmark                                                               Mode  Cnt     Score     Error  Units
+SQLiteConnectorBenchmark.connectorGet                                  thrpt   40  1773.249 ± 320.416  ops/s
+SQLiteConnectorBenchmark.connectorGet:·stack                           thrpt            NaN              ---
+SQLiteConnectorBenchmark.defaultGet                                    thrpt   40  1138.030 ±  83.745  ops/s
+SQLiteConnectorBenchmark.defaultGet:·stack                             thrpt            NaN              ---
+SQLiteConnectorBenchmark.concurrentConnector                              ss   10    15.672 ±   2.807   s/op
+SQLiteConnectorBenchmark.concurrentConnector:connectorConcurrentRead      ss   10    15.903 ±   2.628   s/op
+SQLiteConnectorBenchmark.concurrentConnector:connectorConcurrentWrite     ss   10    14.749 ±   3.540   s/op
+SQLiteConnectorBenchmark.concurrentConnector:·stack                       ss            NaN              ---
+SQLiteConnectorBenchmark.concurrentDefault                                ss   10    30.556 ±   1.823   s/op
+SQLiteConnectorBenchmark.concurrentDefault:defaultConcurrentRead          ss   10    28.054 ±   2.007   s/op
+SQLiteConnectorBenchmark.concurrentDefault:defaultConcurrentWrite         ss   10    40.566 ±   1.369   s/op
+SQLiteConnectorBenchmark.concurrentDefault:·stack                         ss            NaN              ---
+SQLiteConnectorBenchmark.connectorWrite                                   ss   10    39.320 ±   0.424   s/op
+SQLiteConnectorBenchmark.connectorWrite:·stack                            ss            NaN              ---
+
+Benchmark result is saved to build\reports\jmh\results.txt
+
+BUILD SUCCESSFUL
+
+Total time: 1 hrs 16 mins 55.747 secs

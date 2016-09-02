@@ -2,7 +2,7 @@
 
 ## Intro
 
-A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester. The primary benefit of doing this is avoiding database locking exceptions.
+A simple library to make using SQLite's default serialized threading mode more convenient, by automatically sharing connections to the same database. That is, if a new connection to database X is requested while there is already an open connection to database X from somewhere else, that existing open connection will be returned to the requester. The primary benefit of doing this is avoiding database locking exceptions, though improved performance has been observed as well.
 
 This very small project was inspired by [a Stack Overflow question](http://stackoverflow.com/questions/10707434/sqlite-in-a-multithreaded-java-application), in particular:
 > SQLite uses filesystem-based locks for concurrent access synchronization among processes, since as an embedded database it does not have a dedicated process (server) to schedule operations. Since each thread in your code creates its own connection to the database, it is treated as a separate process, with synchronization happening via file-based locks, which are significantly slower than any other synchronization method.
@@ -28,10 +28,10 @@ The primary function of this library is illustrated in the following code snippe
 try (Connection conn1 = connector.getConnection('C:\\mydatabase.db')) {
     try (Connection conn2 = connector.getConnection('C:\\mydatabase.db')) {
         // conn1 == conn2. The same connection was returned in both places.
-        // This example is useless because both connections were obtained in
-        // the same thread, but in other situations, this avoids database 
-        // locking exceptions when multiple threads attempt to write to a 
-        // database at the same time.        
+        // This example is mostly useless, but in other situations, 
+        // this avoids database locking exceptions when multiple threads
+        // attempt to write to a database at the same time. Performance
+        // may also be notably better.        
     }
 }
 ```
@@ -68,6 +68,8 @@ try (Connection conn = connector.getConnection("mydatabase.db")) {
 }
 ```
 All connections obtained this way will be shared if multiple threads want access to the same database concurrently. They will also all use the properties the connector was configured with during its construction, such as in the foreign key example above.
+
+Note that connection sharing only considers different requests to be accessing the same database if the paths given resolve to the same <b>absolute</b> path. This means `\temp\database.db` and `\temp\..\temp\database.db` are <b>not</b> considered the same database by the connector, even though their canonical paths are the same. For the sake of performance, no canonical path resolution is done - you must ensure the paths you pass in are the same in absolute terms. 
 
 Occasionally, you may want to get a connection to a database without using the properties the connector was configured with. For example, after initially building the connector to enforce foreign key constraints, you may want to get a connection with foreign key constraints not enforced, in order to drop and recreate a table. To do so, call `getUnsharedConnection`:
 ```java
